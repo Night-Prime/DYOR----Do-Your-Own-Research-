@@ -18,3 +18,4 @@ We are currently building a financial insight & analytics platform for new and p
 
 ## Authors: 
 - Abati Babatunde Daniel (danielabatibabatunde1@gmail.com)
+- Bethel

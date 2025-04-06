@@ -1,4 +1,3 @@
+### DYOR
 
-## DYOR
-
-This is the Frontend application built to execute the vision for DYOR
+This is the Frontend Application of the DYOR (Do Your Own Research) platform; Built using the Nextjs Framework

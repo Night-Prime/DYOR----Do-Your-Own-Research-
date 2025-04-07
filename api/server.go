@@ -2,35 +2,33 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"net/http"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/go-chi/chi/v5"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 )
 
 func main() {
-	godotenv.Load(".env")
 
-	fmt.Println("Currrently Initializing Server")
+	cfg, err := config.Load()
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+	}
+
+	fmt.Println("Currently Initializing Server")
 	fmt.Println("--------------------------------------------- \n")
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		fmt.Println("PORT is not found")
-	}
-	port = ":" + port
 
 	app := &http.Server{
-		Addr: 			port,
+		Addr: 			":" + cfg.Port,
 		Handler: 		chi.NewRouter(),
 		ReadTimeout:	60 * time.Second,
 		WriteTimeout:	60 * time.Second,
 	}
 
 	fmt.Println("---------------------------------------------")
-    fmt.Printf(" Starting DYOR Server on port%s\n", port)
+    fmt.Printf(" Starting DYOR Server on port: %s\n", cfg.Port)
 	fmt.Println("---------------------------------------------")
 
 	if err := app.ListenAndServe(); err != nil {

@@ -5,6 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"gorm.io/gorm"
+	"gorm.io/driver/postgres"
+	_ "github.com/lib/pq"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 )
@@ -15,6 +19,14 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error loading config: %v\n", err)
 	}
+
+	db, err := gorm.Open(postgres.Open(cfg.ConnStr))
+	if err != nil {
+		fmt.Printf("Error connecting to database: %v\n", err)
+		return
+	}
+	fmt.Printf("Successfully connected to database: %v\n", db)
+	fmt.Println("--------------------------------------------- \n")
 
 	fmt.Println("Currently Initializing Server")
 	fmt.Println("--------------------------------------------- \n")

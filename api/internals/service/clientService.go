@@ -1,0 +1,87 @@
+package service
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"io"
+
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
+)
+
+// Here, this file is responsible for fetching data from various APIs.
+// It defines interfaces for different asset types (stocks, bonds, and cryptocurrencies)
+// and implements the functions to fetch data from those APIs.
+
+type StockAPIClient interface {
+	GetStockData(symbol string) (*models.StockData, error)
+}
+
+// type CryptoAPIClient interface {
+// 	GetCryptoData() (*models.CryptoData, error)
+// }
+
+// type BondAPIClient interface {
+// 	GetBondData() (*models.BondData, error)
+// }
+
+
+// (Another Dependency Injection happening here)
+func NewStockClient() StockAPIClient {
+    return &stockClientImpl{}
+}
+
+type stockClientImpl struct{}
+
+func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error) {
+
+	fmt.Println("The Stock API Client Layer")
+	fmt.Println("--------------------------------------------- \n")
+
+    cfg, err := config.Load()
+    if err != nil {
+        return nil, fmt.Errorf("error loading config: %v", err)
+    }
+
+	// make the request to the stock API
+    url := fmt.Sprintf("%s?symbols=%s", cfg.StockAPI_URL, symbol)
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, fmt.Errorf("request error: %v", err)
+    }
+
+    req.Header.Set("x-rapidapi-host", cfg.StockHostname)
+    req.Header.Set("x-rapidapi-key", cfg.StockAPI_Key)
+	req.Header.Set("Accept-Encoding", "application/json")
+
+	// fmt.Printf("Sending the Request: %s\nRequest URL: %s\nHeaders: %v\n", symbol, req.URL.String(), req.Header)
+	// fmt.Println("--------------------------------------------- \n")
+
+    res, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return nil, fmt.Errorf("response error: %v", err)
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("error: %s", res.Status)
+    }
+
+	bodyBytes, err := io.ReadAll(res.Body)
+    if err != nil {
+        return nil, fmt.Errorf("error reading response body: %v", err)
+    }
+
+    var apiResponse models.StockData
+    if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
+        return nil, fmt.Errorf("decoding error: %v", err)
+    }
+
+    if len(apiResponse.Data.QuoteResponse.Result) == 0 {
+        return nil, fmt.Errorf("no stock data found for symbol %s", symbol)
+    }
+
+	return &apiResponse, nil
+}
+

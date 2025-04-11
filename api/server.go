@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/routes"
 )
 
 func main() {
@@ -31,12 +32,18 @@ func main() {
 	fmt.Println("Currently Initializing Server")
 	fmt.Println("--------------------------------------------- \n")
 
+	// Initialize the router
+	router := chi.NewRouter()
+	apiRouter := chi.NewRouter()
+
+	apiRouter.Mount("/asset", routes.AssetRouteHandler())
+	router.Mount("/api/v1", apiRouter)
 
 	app := &http.Server{
-		Addr: 			":" + cfg.Port,
-		Handler: 		chi.NewRouter(),
-		ReadTimeout:	60 * time.Second,
-		WriteTimeout:	60 * time.Second,
+		Addr:         ":" + cfg.Port,
+		Handler:      router,
+		ReadTimeout:  60 * time.Second,
+		WriteTimeout: 60 * time.Second,
 	}
 
 	fmt.Println("---------------------------------------------")

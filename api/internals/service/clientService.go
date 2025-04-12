@@ -14,7 +14,9 @@ import (
 // It defines interfaces for different asset types (stocks, bonds, and cryptocurrencies)
 // and implements the functions to fetch data from those APIs.
 
-// (Another Dependency Injection happening here)
+// (Lot of Dependency Injection happening here)
+
+// For Stock:
 type StockAPIClient interface {
 	GetStockData(symbol string) (*models.StockData, error)
 }
@@ -77,7 +79,6 @@ func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error)
 }
 
 // For Crypto:
-
 type CryptoAPIClient interface {
 	GetCryptoData(page, currency, per_page string) (*models.CryptoData, error)
 }

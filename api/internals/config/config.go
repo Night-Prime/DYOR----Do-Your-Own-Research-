@@ -7,6 +7,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var cfg *Config
+
 type Config struct {
 	Port    string
 	ConnStr string
@@ -21,6 +23,7 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
+	var err error
 	godotenv.Load()
 
 	// grab port
@@ -65,7 +68,7 @@ func Load() (*Config, error) {
 		return nil, errors.New("CRYPTO_API_HOST not set in environmental variables")
 	}
 
-	return &Config{
+	cfg =  &Config{
 		Port: port,
 		ConnStr: connStr,
 		StockAPI_URL: stockAPI_URL,
@@ -74,5 +77,14 @@ func Load() (*Config, error) {
 		CryptoAPI_Key: cryptoAPI_Key,
 		CryptoAPI_URL: cryptoAPI_URL,
 		CryptoHostname: cryptoHostname,
-	}, nil
+	}
+
+	return cfg, err
+}
+
+func Get() *Config {
+	if cfg == nil {
+		panic("Failed to load config")
+	}
+	return cfg
 }

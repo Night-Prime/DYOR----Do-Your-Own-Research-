@@ -16,10 +16,11 @@ import (
 
 func main() {
 
-	cfg, err := config.Load()
+	_, err := config.Load()
 	if err != nil {
 		fmt.Printf("Error loading config: %v\n", err)
 	}
+	cfg := config.Get()
 
 	db, err := gorm.Open(postgres.Open(cfg.ConnStr))
 	if err != nil {

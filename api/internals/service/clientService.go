@@ -32,10 +32,7 @@ func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error)
 	fmt.Println("The Stock API Client Layer")
 	fmt.Println("--------------------------------------------- \n")
 
-    cfg, err := config.Load()
-    if err != nil {
-        return nil, fmt.Errorf("error loading config: %v", err)
-    }
+    cfg := config.Get()
 
 	// make the request to the stock API
     url := fmt.Sprintf("%s?symbols=%s", cfg.StockAPI_URL, symbol)
@@ -94,12 +91,8 @@ func (c *cryptoClientImpl) GetCryptoData (page, currency, per_page string) (*mod
     fmt.Println("The Crypto API Client Layer")
 	fmt.Println("--------------------------------------------- \n")
 
-    // note: need to move this & its counterpart to a central system to be called once, for the values to be used in all parts of the codebase
-    cfg, err := config.Load()
-    if err != nil {
-        return nil, fmt.Errorf("error loading config:  %v", err)
-    }
-    // var page, currency, per_page string
+    cfg := config.Get()
+
     // making the request
     queryParams := map[string]string{
         "page":       page,

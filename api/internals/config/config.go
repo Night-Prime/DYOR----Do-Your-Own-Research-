@@ -14,6 +14,10 @@ type Config struct {
 	StockAPI_URL string
 	StockAPI_Key  string
 	StockHostname string
+
+	CryptoAPI_URL string
+	CryptoAPI_Key  string
+	CryptoHostname string
 }
 
 func Load() (*Config, error) {
@@ -31,7 +35,6 @@ func Load() (*Config, error) {
 		return nil, errors.New("DB_URL not set in environment variables")
 	}
 
-	// grab stock API URL
 	stockAPI_URL := os.Getenv("STOCK_URL")
 	if stockAPI_URL == "" {
 		return nil, errors.New("STOCK_URL not set in environment variables")
@@ -42,9 +45,24 @@ func Load() (*Config, error) {
 		return nil, errors.New("STOCK_API_KEY not set in environment variables")
 	}
 
-	StockHostname := os.Getenv("STOCK_API_HOST")
-	if StockHostname == "" {
+	stockHostname := os.Getenv("STOCK_API_HOST")
+	if stockHostname == "" {
 		return nil, errors.New("STOCK_HOSTNAME not set in environment variables")
+	}
+
+	cryptoAPI_URL := os.Getenv("CRYPTO_URL")
+	if cryptoAPI_URL == "" {
+		return nil, errors.New("CRYPTO_URL not set in environmental variables")
+	}
+
+	cryptoAPI_Key := os.Getenv("CRYPTO_API_KEY")
+	if cryptoAPI_Key == "" {
+		return nil, errors.New("CRYPTO_API_KEY not set in environmental variables")
+	}
+
+	cryptoHostname := os.Getenv("CRYPTO_API_HOST")
+	if cryptoHostname == "" {
+		return nil, errors.New("CRYPTO_API_HOST not set in environmental variables")
 	}
 
 	return &Config{
@@ -52,6 +70,9 @@ func Load() (*Config, error) {
 		ConnStr: connStr,
 		StockAPI_URL: stockAPI_URL,
 		StockAPI_Key: stockAPI_Key,
-		StockHostname: StockHostname,
+		StockHostname: stockHostname,
+		CryptoAPI_Key: cryptoAPI_Key,
+		CryptoAPI_URL: cryptoAPI_URL,
+		CryptoHostname: cryptoHostname,
 	}, nil
 }

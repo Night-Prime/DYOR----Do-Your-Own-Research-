@@ -12,7 +12,7 @@ type AssetType string
 const (
 	AssetTypeStock  AssetType = "stock"
 	// AssetTypeBond   AssetType = "bond"
-	// AssetTypeCrypto AssetType = "crypto"
+	AssetTypeCrypto AssetType = "crypto"
 )
 
 type AssetBase struct {
@@ -28,18 +28,19 @@ type AssetBase struct {
     UpdatedAt     time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
-// type CryptoData struct {
-//     Image                   string  `json:"image"`
-//     MarketCap               float64 `json:"market_cap"`
-//     MarketCapRank           int     `json:"market_cap_rank"`
-//     High24H                 float64 `json:"high_24h"`
-//     Low24H                  float64 `json:"low_24h"`
-//     PriceChange24H          float64 `json:"price_change_24h"`
-//     PriceChangePercentage24H float64 `json:"price_change_percentage_24h"`
-//     CirculatingSupply       float64 `json:"circulating_supply"`
-//     TotalSupply             float64 `json:"total_supply"`
-//     LastUpdated             string  `json:"last_updated"`
-// }
+type CryptoData [] struct {
+        Image                   string  `json:"image"`
+        MarketCap               float64 `json:"market_cap"`
+        MarketCapRank           int     `json:"market_cap_rank"`
+        Symbol                  string  `json:"symbol"`
+        High24H                 float64 `json:"high_24h"`
+        Low24H                  float64 `json:"low_24h"`
+        PriceChange24H          float64 `json:"price_change_24h"`
+        PriceChangePercentage24H float64 `json:"price_change_percentage_24h"`
+        CirculatingSupply       float64 `json:"circulating_supply"`
+        TotalSupply             float64 `json:"total_supply"`
+        LastUpdated             string  `json:"last_updated"`
+}
 
 type StockData struct {
     Status int `json:"status" gorm:"-"`
@@ -63,7 +64,6 @@ type StockData struct {
                 RegularMarketChange struct {
                     Raw float64 `json:"raw"`
                 } `json:"regularMarketChange"`
-                // Add other fields as needed...
             } `json:"result"`
         } `json:"quoteResponse"`
     } `json:"data"`
@@ -78,17 +78,17 @@ type StockData struct {
 
 type Asset struct {
     AssetBase
-    // CryptoData *CryptoData `json:"crypto_data,omitempty" gorm:"type:jsonb"`
+    CryptoData *CryptoData `json:"crypto_data,omitempty" gorm:"type:jsonb"`
     StockData  *StockData  `json:"stock_data,omitempty" gorm:"type:jsonb"`
     // BondData   *BondData   `json:"bond_data,omitempty" gorm:"type:jsonb"`
 }
 
 func (a *Asset) Validate() error {
     switch a.Type {
-    // case AssetTypeCrypto:
-    //     if a.CryptoData == nil {
-    //         return errors.New("crypto_data is required for crypto assets")
-    //     }
+    case AssetTypeCrypto:
+        if a.CryptoData == nil {
+            return errors.New("crypto_data is required for crypto assets")
+        }
     case AssetTypeStock:
         if a.StockData == nil {
             return errors.New("stock_data is required for stock assets")

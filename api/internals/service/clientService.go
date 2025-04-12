@@ -14,20 +14,11 @@ import (
 // It defines interfaces for different asset types (stocks, bonds, and cryptocurrencies)
 // and implements the functions to fetch data from those APIs.
 
+// (Another Dependency Injection happening here)
 type StockAPIClient interface {
 	GetStockData(symbol string) (*models.StockData, error)
 }
 
-// type CryptoAPIClient interface {
-// 	GetCryptoData() (*models.CryptoData, error)
-// }
-
-// type BondAPIClient interface {
-// 	GetBondData() (*models.BondData, error)
-// }
-
-
-// (Another Dependency Injection happening here)
 func NewStockClient() StockAPIClient {
     return &stockClientImpl{}
 }
@@ -85,3 +76,80 @@ func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error)
 	return &apiResponse, nil
 }
 
+// For Crypto:
+
+type CryptoAPIClient interface {
+	GetCryptoData(page, currency, per_page string) (*models.CryptoData, error)
+}
+
+func NewCryptoClient() CryptoAPIClient {
+    return &cryptoClientImpl{}
+}
+
+type cryptoClientImpl struct {}
+
+func (c *cryptoClientImpl) GetCryptoData (page, currency, per_page string) (*models.CryptoData, error) {
+
+    fmt.Println("The Crypto API Client Layer")
+	fmt.Println("--------------------------------------------- \n")
+
+    // note: need to move this & its counterpart to a central system to be called once, for the values to be used in all parts of the codebase
+    cfg, err := config.Load()
+    if err != nil {
+        return nil, fmt.Errorf("error loading config:  %v", err)
+    }
+    // var page, currency, per_page string
+    // making the request
+    queryParams := map[string]string{
+        "page":       page,
+        "sparkline":  "false",
+        "vs_currency": currency,
+        "per_page":   per_page,
+        "order":      "market_cap_desc",
+    }
+
+    req, err := http.NewRequest("GET", cfg.CryptoAPI_URL, nil)
+    if err != nil {
+        return nil, fmt.Errorf("request error: %v", err)
+    }
+
+    // adding the queries
+    q := req.URL.Query()
+    for key, value := range queryParams {
+        q.Add(key, value)
+    }
+    req.URL.RawQuery = q.Encode()
+
+    // setting headers
+    req.Header.Set("x-rapidapi-host", cfg.CryptoHostname)
+    req.Header.Set("x-rapidapi-key", cfg.CryptoAPI_Key)
+	req.Header.Set("Accept-Encoding", "application/json")
+
+    // fmt.Printf("Sending the Request: Request URL: %s\nHeaders: %v\n", req.URL.String(), req.Header)
+	// fmt.Println("--------------------------------------------- \n")
+
+    res, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return nil, fmt.Errorf("response error: %v ", err)
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("error: %s", res.Status)
+    }
+
+    bodyBytes, err := io.ReadAll(res.Body)
+    if err != nil {
+        return nil, fmt.Errorf("error reading response body: %v", err)
+    }
+    // fmt.Printf("The Response Body: %s\n", string(bodyBytes))
+    // fmt.Println("--------------------------------------------- \n")
+
+    var apiResponse models.CryptoData
+    if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
+        return nil, fmt.Errorf("decoding error: %v", err)
+    }
+
+    return &apiResponse, nil
+
+}

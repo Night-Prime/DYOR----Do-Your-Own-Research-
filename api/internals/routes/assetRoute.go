@@ -10,11 +10,11 @@ import (
 
 func AssetRouteHandler() http.Handler {
 	stockClient := service.NewStockClient()
-	// cryptoClient := service.NewCryptoClient()
+	cryptoClient := service.NewCryptoClient()
 	// bondClient := service.NewBondClient()
 	
 	// Create service with all dependencies
-	assetService := service.NewAssetService(stockClient)
+	assetService := service.NewAssetService(stockClient, cryptoClient)
 	
 	// Create handler
 	assetHandler := handlers.NewAssetHandler(assetService)

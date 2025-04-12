@@ -13,19 +13,19 @@ import (
 
 type AssetService struct {
 	stockAPIClient StockAPIClient
-	// cryptoAPIClient CryptoAPIClient
+	cryptoAPIClient CryptoAPIClient
 	// bondAPIClient BondAPIClient
 }
 
-func NewAssetService(stockAPIClient StockAPIClient) *AssetService {
+func NewAssetService(stockAPIClient StockAPIClient, cryptoAPIClient CryptoAPIClient) *AssetService {
 	return &AssetService{
 		stockAPIClient: stockAPIClient,
-		// cryptoAPIClient: cryptoAPIClient,
+		cryptoAPIClient: cryptoAPIClient,
 		// bondAPIClient: bondAPIClient,
 	}
 }
 
-func (s *AssetService) GetAsset(assetType models.AssetType, symbol string) (*models.Asset, error) {
+func (s *AssetService) GetAsset(assetType models.AssetType, args ...string) (*models.Asset, error) {
 	fmt.Println("The Asset Service Layer")
 	fmt.Println("--------------------------------------------- \n")
 
@@ -33,17 +33,35 @@ func (s *AssetService) GetAsset(assetType models.AssetType, symbol string) (*mod
 	var err error
 
 	switch assetType {
-	// case models.AssetTypeCrypto:
-	// 	asset, err = s.fetchCrypto()
+	case models.AssetTypeCrypto:
+		var page, currency, per_page string
+
+		if len(args) > 0 {
+			if len(args) >= 1 {
+				page = args[0]
+			}
+			if len(args) >= 2 {
+				currency = args[1]
+			}
+			if len(args) >= 3 {
+				per_page = args[2]
+			}
+		}
+
+		asset, err = s.fetchCrypto(page, currency, per_page)
 	case models.AssetTypeStock:
+		if len(args) == 0 {
+			return nil, fmt.Errorf("symbol is required for fetching stock data")
+		}
+		symbol := args[0]
 		asset, err = s.fetchStock(symbol)
 	// case models.AssetTypeBond:
 	// 	asset, err = s.fetchBond()
 	default:
-		return nil, fmt.Errorf("unsupported asset type: %s", assetType)	
+		return nil, fmt.Errorf("unsupported asset type: %s", assetType)
 	}
 
-	if err != nil {	
+	if err != nil {
 		return nil, fmt.Errorf("error fetching asset data: %v", err)
 	}
 
@@ -85,54 +103,35 @@ func (s *AssetService) fetchStock(symbol string) (*models.Asset, error) {
     return asset, nil
 }
 
-// func (s *AssetService) fetchCrypto() (*models.Asset, error) {
-// 	cryptoData, err := s.cryptoAPIClient.GetCryptoData()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error fetching crypto data: %v", err)
-// 	}
+// For Crypto :
+func (s *AssetService) fetchCrypto(page, currency, per_page string) (*models.Asset, error) {
+	fmt.Println("Getting the data from the Crypto API Client Layer")
+	fmt.Println("--------------------------------------------- \n")
 
-// 	// return &models.Asset{
-// 	// 	AssetBase: models.AssetBase{
-// 	// 		Type: models.AssetTypeCrypto,
-// 	// 		Symbol: cryptoData.Symbol,
-// 	// 		CurrentPrice: cryptoData.CurrentPrice,
-// 	// 		Volume: cryptoData.Volume,
-// 	// 		Quantity: cryptoData.Quantity,
-// 	// 		Name: cryptoData.Name,
-// 	// 	},
-// 	// 	CryptoData: &models.CryptoData{
-// 	// 		MarketCap: cryptoData.MarketCap,
-// 	// 		CirculatingSupply: cryptoData.CirculatingSupply,
-// 	// 		MaxSupply: cryptoData.MaxSupply,
-// 	// 		LastUpdated: cryptoData.LastUpdated,
-// 	// 	},
-// 	// }, nil
-// 	fmt.Printf("Model Data &v+", cryptoData)
-// 	return &models.Asset{}, nil
-// }
+	cryptoData, err := s.cryptoAPIClient.GetCryptoData(page, currency, per_page)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching crypto data: %v", err)
+	}
 
-// func (s *AssetService) fetchBond() (*models.Asset, error) {
-// 	bondData, err := s.bondAPIClient.GetBondData()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error fetching bond data: %v", err)
-// 	}
+	if len(*cryptoData) == 0 {
+		return nil, fmt.Errorf("no crypto data found")
+	}
 
-// 	// return &models.Asset{
-// 	// 	AssetBase: models.AssetBase{
-// 	// 		Type: models.AssetTypeBond,
-// 	// 		Symbol: bondData.Symbol,
-// 	// 		CurrentPrice: bondData.CurrentPrice,
-// 	// 		Volume: bondData.Volume,
-// 	// 		Quantity: bondData.Quantity,
-// 	// 		Name: bondData.Name,
-// 	// 	},
-// 	// 	BondData: &models.BondData{
-// 	// 		YieldToMaturity: bondData.YieldToMaturity,
-// 	// 		MaturityDate: bondData.MaturityDate,
-// 	// 		CouponRate: bondData.CouponRate,
-// 	// 		CreditRating: bondData.CreditRating,
-// 	// 	},
-// 	// }, nil
-// 	fmt.Printf("Model Data &v+", bondData)
-// 	return &models.Asset{}, nil
-// }
+	// Iterate over the array and process each object
+	for _, result := range *cryptoData {
+		asset := &models.Asset{
+			AssetBase: models.AssetBase{
+				Type:         models.AssetTypeCrypto,
+				Symbol:       result.Symbol, // Replace with the correct field
+				Volume:       result.CirculatingSupply, // Replace with the correct field
+				CurrentPrice: result.High24H, // Replace with the correct field
+				Name:         result.LastUpdated, // Replace with the correct field
+			},
+			CryptoData: cryptoData,
+		}
+		
+		return asset, nil
+	}
+
+	return nil, fmt.Errorf("no valid crypto asset found")
+}

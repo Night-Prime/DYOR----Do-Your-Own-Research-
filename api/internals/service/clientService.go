@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"io"
+    "strings"
 
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
@@ -77,7 +78,7 @@ func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error)
 
 // For Crypto:
 type CryptoAPIClient interface {
-	GetCryptoData(page, currency, per_page string) (*models.CryptoData, error)
+	GetCryptoData(symbols []string) (*models.CryptoData, error)
 }
 
 func NewCryptoClient() CryptoAPIClient {
@@ -86,7 +87,7 @@ func NewCryptoClient() CryptoAPIClient {
 
 type cryptoClientImpl struct {}
 
-func (c *cryptoClientImpl) GetCryptoData (page, currency, per_page string) (*models.CryptoData, error) {
+func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData, error) {
 
     fmt.Println("The Crypto API Client Layer")
 	fmt.Println("--------------------------------------------- \n")
@@ -95,11 +96,7 @@ func (c *cryptoClientImpl) GetCryptoData (page, currency, per_page string) (*mod
 
     // making the request
     queryParams := map[string]string{
-        "page":       page,
-        "sparkline":  "false",
-        "vs_currency": currency,
-        "per_page":   per_page,
-        "order":      "market_cap_desc",
+        "symbol": strings.Join(symbols, ","),
     }
 
     req, err := http.NewRequest("GET", cfg.CryptoAPI_URL, nil)
@@ -110,14 +107,15 @@ func (c *cryptoClientImpl) GetCryptoData (page, currency, per_page string) (*mod
     // adding the queries
     q := req.URL.Query()
     for key, value := range queryParams {
-        q.Add(key, value)
+        if key == "symbol" {
+            for _, symbol := range strings.Split(value, ",") {
+                q.Add("symbols", symbol)
+            }
+        } else {
+            q.Add(key, value)
+        }
     }
     req.URL.RawQuery = q.Encode()
-
-    // setting headers
-    req.Header.Set("x-rapidapi-host", cfg.CryptoHostname)
-    req.Header.Set("x-rapidapi-key", cfg.CryptoAPI_Key)
-	req.Header.Set("Accept-Encoding", "application/json")
 
     // fmt.Printf("Sending the Request: Request URL: %s\nHeaders: %v\n", req.URL.String(), req.Header)
 	// fmt.Println("--------------------------------------------- \n")

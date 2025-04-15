@@ -31,14 +31,22 @@ func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	switch assetType {
-	case "stocks":
+	case "stock":
 		symbol := r.URL.Query().Get("symbols")
 		asset, err = h.assetService.GetAsset(assetType, symbol)
 	case "crypto":
-		page := r.URL.Query().Get("page")
-		currency := r.URL.Query().Get("currency")
-		perPage := r.URL.Query().Get("per_page")
-		asset, err = h.assetService.GetAsset(assetType, page, currency, perPage)
+		// Get all symbol values from query params
+		symbols := r.URL.Query()["symbols"]
+		if len(symbols) == 0 {
+			http.Error(w, "at least one symbol is required", http.StatusBadRequest)
+			return
+		}
+		
+		// Convert to variadic arguments
+		args := make([]string, 0, len(symbols))
+		args = append(args, symbols...)
+		
+		asset, err = h.assetService.GetAsset(assetType, args...)
 	default:
 		http.Error(w, "Invalid asset type", http.StatusBadRequest)
 		return

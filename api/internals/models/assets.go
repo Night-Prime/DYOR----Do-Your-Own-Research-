@@ -28,18 +28,31 @@ type AssetBase struct {
     UpdatedAt     time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
-type CryptoData [] struct {
-        Image                   string  `json:"image"`
-        MarketCap               float64 `json:"market_cap"`
-        MarketCapRank           int     `json:"market_cap_rank"`
-        Symbol                  string  `json:"symbol"`
-        High24H                 float64 `json:"high_24h"`
-        Low24H                  float64 `json:"low_24h"`
-        PriceChange24H          float64 `json:"price_change_24h"`
-        PriceChangePercentage24H float64 `json:"price_change_percentage_24h"`
-        CirculatingSupply       float64 `json:"circulating_supply"`
-        TotalSupply             float64 `json:"total_supply"`
-        LastUpdated             string  `json:"last_updated"`
+type CryptoData struct {
+    Data      map[string]interface{} `json:"data"`
+    DataArray []struct {
+        Key                string `json:"key"`
+        ID                 int    `json:"id"`
+        Name               string `json:"name"`
+        Symbol             string `json:"symbol"`
+        Decimals           int    `json:"decimals"`
+        Logo               string `json:"logo"`
+        Rank               int    `json:"rank"`
+        Price              float64 `json:"price"`
+        MarketCap          float64 `json:"market_cap"`
+        MarketCapDiluted   float64 `json:"market_cap_diluted"`
+        Volume             float64 `json:"volume"`
+        VolumeChange24H    float64 `json:"volume_change_24h"`
+        Volume7D           float64 `json:"volume_7d"`
+        Liquidity          float64 `json:"liquidity"`
+        ATH                float64 `json:"ath"`
+        ATL                float64 `json:"atl"`
+        PriceChange1H      float64 `json:"price_change_1h"`
+        PriceChange24H     float64 `json:"price_change_24h"`
+        PriceChange7D      float64 `json:"price_change_7d"`
+        PriceChange1M      float64 `json:"price_change_1m"`
+        PriceChange1Y      float64 `json:"price_change_1y"`
+    } `json:"dataArray"`
 }
 
 type StockData struct {

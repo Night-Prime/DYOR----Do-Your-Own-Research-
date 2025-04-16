@@ -3,7 +3,10 @@ package config
 import (
 	"errors"
 	"os"
-	
+
+	"gorm.io/gorm"
+	"gorm.io/driver/postgres"
+	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
 )
 
@@ -87,4 +90,20 @@ func Get() *Config {
 		panic("Failed to load config")
 	}
 	return cfg
+}
+
+func LoadDB() *gorm.DB {
+	// Load the database connection string from environment variables
+	connStr := os.Getenv("DB_URL")
+	if connStr == "" {
+		panic("DB_URL not set in environment variables")
+	}
+
+	// Connect to the database
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
+	if err != nil {
+		panic("Failed to connect to database: " + err.Error())
+	}
+
+	return db
 }

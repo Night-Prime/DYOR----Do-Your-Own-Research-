@@ -23,6 +23,8 @@ type Config struct {
 	CryptoAPI_URL string
 	CryptoAPI_Key  string
 	CryptoHostname string
+
+	SecretKey string
 }
 
 func Load() (*Config, error) {
@@ -71,6 +73,11 @@ func Load() (*Config, error) {
 		return nil, errors.New("CRYPTO_API_HOST not set in environmental variables")
 	}
 
+	secretKey := os.Getenv("SECRET_KEY")
+	if secretKey == "" {
+		return nil, errors.New("SECRET_KEY not set in environment variables")
+	}
+
 	cfg =  &Config{
 		Port: port,
 		ConnStr: connStr,
@@ -80,6 +87,7 @@ func Load() (*Config, error) {
 		CryptoAPI_Key: cryptoAPI_Key,
 		CryptoAPI_URL: cryptoAPI_URL,
 		CryptoHostname: cryptoHostname,
+		SecretKey: secretKey,
 	}
 
 	return cfg, err

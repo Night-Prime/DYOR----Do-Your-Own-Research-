@@ -35,7 +35,7 @@ func main() {
 	apiRouter := chi.NewRouter()
 
 	apiRouter.Mount("/asset", routes.AssetRouteHandler())
-	apiRouter.Mount("/user", routes.UserRouteHandler())
+	apiRouter.Mount("/admin", routes.UserRouteHandler())
 	router.Mount("/api/v1", apiRouter)
 
 	app := &http.Server{

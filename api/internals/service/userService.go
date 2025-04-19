@@ -1,14 +1,23 @@
 package service
 
-import(
+import (
 	"fmt"
-
+	"net/http"
+	"time"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
 )
 
-func CreateUser(user *models.User) (*models.User, error) {
+func Signup(user *models.User) (*models.User, error) {
 	fmt.Println("Creating a new user in the User Service Layer")
 	fmt.Println("--------------------------------------------- \n")
+
+	// Encrypt the password before saving the user
+	hashedPassword, err := middleware.HashPassword(user.Password)
+	if err != nil {
+		return nil, fmt.Errorf("error hashing password: %v", err)
+	}
+	user.Password = hashedPassword
 
 	if err := models.Validate(user); err != nil {
 		return nil, fmt.Errorf("user validation error: %v", err)
@@ -21,40 +30,37 @@ func CreateUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func GetUserByEmail(email string) (*models.User, error) {
-	user, err := models.GetUserByEmail(email)
+func UserLogin(w http.ResponseWriter, user *models.User) (*models.User, error) {
+	fmt.Println("Logging in user in the User Service Layer")
+	fmt.Println("--------------------------------------------- \n")
+	email := *user.Email
+	// Retrieve the user from the database
+	storedUser, err := models.GetUserByEmail(email)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching user by email: %v", err)
+		return nil, fmt.Errorf("error retrieving user from database: %v", err)
 	}
-	return user, nil
-}
 
-func GetUserByID(id string) (*models.User, error) {
-	user, err := models.GetUserByID(id)
+	// Compare the provided password with the stored hashed password
+	if !middleware.CheckPasswordHash(user.Password, storedUser.Password) {
+		return nil, fmt.Errorf("invalid password")
+	}
+
+	// Create a token for the user
+	tokenString, err := middleware.CreateToken(*user.Email)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching user by id: %v", err)
+		return nil, fmt.Errorf("error creating token: %v", err)
 	}
-	return user, nil
-}
 
-func GetAllUsers() ([]models.User, error) {
-	users, err := models.GetAllUsers()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching all users: %v", err)
-	}
-	return users, nil
-}
+	// Set the token as a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "DYOR_token",
+		Value:    tokenString,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Now().Add(24 * time.Hour),
+	})
 
-func UpdateUser(user *models.User) (*models.User, error) {
-	if err := models.UpdateUser(user); err != nil {
-		return nil, fmt.Errorf("error updating user: %v", err)
-	}
-	return user, nil
-}
-
-func DeleteUser(id string) error {
-	if err := models.DeleteUser(id); err != nil {
-		return fmt.Errorf("error deleting user: %v", err)
-	}
-	return nil
+	return storedUser, nil
 }

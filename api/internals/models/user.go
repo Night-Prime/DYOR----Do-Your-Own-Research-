@@ -14,6 +14,7 @@ type User struct {
 	LastName   string      `gorm:"type:varchar(100);not null" json:"last_name"`
 	Avatar     *string     `gorm:"type:varchar(255)" json:"avatar"`
 	Email      *string     `gorm:"type:varchar(100);unique" json:"email"`
+	Role     string      `gorm:"type:varchar(50);default:'user'" json:"role"`
 	Password   string      `gorm:"type:varchar(255);not null" json:"password"`
 	CreatedAt  time.Time   `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time   `gorm:"autoUpdateTime" json:"updated_at"`
@@ -30,6 +31,9 @@ func Validate (u *User) error {
 	}
 	if u.Email == nil || *u.Email == "" {
 		return fmt.Errorf("email is required")
+	}
+	if u.Role == "" {
+		return fmt.Errorf("role is required")
 	}
 	if u.Password == "" {
 		return fmt.Errorf("password is required")
@@ -125,4 +129,16 @@ func DeleteUser(userID string) error {
 		return fmt.Errorf("error deleting user: %v", err)
 	}
 	return nil
+}
+
+func GetUserByRole(role string) ([]User, error) {
+	db := config.LoadDB()
+	var users []User
+	if role == "" {
+		return nil, fmt.Errorf("role is required")
+	}
+	if err := db.Where("role = ?", role).Find(&users).Error; err != nil {
+		return nil, fmt.Errorf("error getting users by role: %v", err)
+	}
+	return users, nil
 }

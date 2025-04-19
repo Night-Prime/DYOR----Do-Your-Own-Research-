@@ -90,8 +90,8 @@ func GetUserByID(userID string) (*User, error) {
 func GetAllUsers() ([]User, error) {
 	db := config.LoadDB()
 	var users []User
-	if err := db.Find(&users).Error; err != nil {
-		return nil, fmt.Errorf("error getting all users: %v", err)
+	if err := db.Where("role = ?", "user").Find(&users).Error; err != nil {
+		return nil, fmt.Errorf("error getting users with role 'user': %v", err)
 	}
 	return users, nil
 }

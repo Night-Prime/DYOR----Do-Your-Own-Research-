@@ -8,11 +8,13 @@ import (
 		"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
 )
 
-func UserRouteHandler() http.Handler {
+// These routes can only be accessed and use by the admin
+
+func AdminRouteHandler() http.Handler {
 	router := chi.NewRouter()
 
 	router.Group(func(r chi.Router) {
-		r.Use(middleware.AuthMiddleware)
+		r.Use(middleware.AdminAuthMiddleware)
 		r.Get("/", handlers.GetUserByEmailHandler)
 		r.Get("/id", handlers.GetUserByIDHandler)
 		r.Get("/all", handlers.GetAllUsersHandler)

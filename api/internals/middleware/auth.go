@@ -74,7 +74,7 @@ func validateToken(tokenString string) (string, error) {
 	return claims.Subject, nil
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func AdminAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("DYOR_token")
 		if err != nil {
@@ -85,7 +85,27 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		email, err := validateToken(tokenString)
 		if err != nil {
+			http.Error(w, "Unauthorized Admin", http.StatusUnauthorized)
+			return
+		}
+		
+		r.Header.Set("email", email)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func UserAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("token")
+		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		tokenString := cookie.Value
+
+		email, err := validateToken(tokenString)
+		if err != nil {
+			http.Error(w, "Unauthorized User", http.StatusUnauthorized)
 			return
 		}
 		

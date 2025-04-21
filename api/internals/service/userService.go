@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
 )
@@ -30,7 +32,7 @@ func Signup(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func UserLogin(w http.ResponseWriter, user *models.User) (*models.User, error) {
+func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	fmt.Println("Logging in user in the User Service Layer")
 	fmt.Println("--------------------------------------------- \n")
 	email := *user.Email
@@ -63,4 +65,36 @@ func UserLogin(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	})
 
 	return storedUser, nil
+}
+
+func CreatePortfolio(portfolio *models.Portfolio) (*models.Portfolio, error) {
+	fmt.Println("Creating a new portfolio for the User in the User Service Layer")
+	fmt.Println("--------------------------------------------- \n")
+
+	if portfolio.UserID.String() == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+
+	if err := models.SavePortfolioToDB(portfolio); err != nil {
+		return nil, fmt.Errorf("error saving portfolio to database: %v", err)
+	}
+
+	return portfolio, nil
+}
+
+func DeletePortfolio(portfolioID string) error {
+	if err := models.DeletePortfolio(portfolioID); err != nil{
+		return fmt.Errorf("Error Deleting Portfolio : %v", err)
+	}
+
+	return nil
+}
+
+func GetPortfolioForUser(userID uuid.UUID) (*models.User, error) {
+	user, err := models.GetPortfolioForUser(userID)
+	if err != nil {
+		return nil, fmt.Errorf("Error Fetching 's' Portfolio")
+	}
+
+	return user, nil
 }

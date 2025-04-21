@@ -19,7 +19,21 @@ type User struct {
 	CreatedAt  time.Time   `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time   `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt  *time.Time  `gorm:"index" json:"deleted_at"`
-	Portfolios []Portfolio `gorm:"foreignKey:UserID" json:"portfolios,omitempty"`
+	Portfolios []Portfolio `gorm:"foreignKey:UserID;references:ID" json:"portfolios,omitempty"`
+}
+
+func AutoMigrate() error {
+    db := config.LoadDB()
+    
+    if err := db.AutoMigrate(&User{}); err != nil {
+        return fmt.Errorf("failed to migrate User: %v", err)
+    }
+    
+    if err := db.AutoMigrate(&Portfolio{}); err != nil {
+        return fmt.Errorf("failed to migrate Portfolio: %v", err)
+    }
+    
+    return nil
 }
 
 func Validate (u *User) error {
@@ -47,7 +61,7 @@ func SaveUserToDB (u *User) error {
 	u.UpdatedAt = time.Now()
 
 	db:= config.LoadDB()	
-	db.AutoMigrate(&User{})
+	go AutoMigrate()
 	
 	var existingUser User
 	if err := db.Where("email = ?", u.Email).First(&existingUser).Error; err == nil {
@@ -141,4 +155,24 @@ func GetUserByRole(role string) ([]User, error) {
 		return nil, fmt.Errorf("error getting users by role: %v", err)
 	}
 	return users, nil
+}
+
+func GetPortfolioForUser(userID uuid.UUID) (*User, error) {
+	db := config.LoadDB()
+	go AutoMigrate()
+
+	if userID == uuid.Nil {
+		return nil, fmt.Errorf("User ID is required for showing Portfolio")
+	}
+
+	var user User
+	if err := db.Preload("Portfolios").First(&user, "id = ?", userID).Error; err != nil {
+		return nil, fmt.Errorf("error getting user with ID %s: %v", userID, err)
+	}
+
+	for i := range user.Portfolios {
+		user.Portfolios[i].UserID = user.ID
+	}
+
+	return &user, nil
 }

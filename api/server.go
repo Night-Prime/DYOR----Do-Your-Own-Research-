@@ -5,10 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	// "gorm.io/gorm"
-	// "gorm.io/driver/postgres"
-	// _ "github.com/lib/pq"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/routes"
@@ -35,7 +31,8 @@ func main() {
 	apiRouter := chi.NewRouter()
 
 	apiRouter.Mount("/asset", routes.AssetRouteHandler())
-	apiRouter.Mount("/admin", routes.UserRouteHandler())
+	apiRouter.Mount("/admin", routes.AdminRouteHandler())
+	apiRouter.Mount("/user", routes.UserRouteHandler())
 	router.Mount("/api/v1", apiRouter)
 
 	app := &http.Server{

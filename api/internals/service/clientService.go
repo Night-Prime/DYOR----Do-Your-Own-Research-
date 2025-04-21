@@ -11,7 +11,7 @@ import (
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 )
 
-// Here, this file is responsible for fetching data from various APIs.
+// Here, this service is responsible for fetching data from various APIs.
 // It defines interfaces for different asset types (stocks, bonds, and cryptocurrencies)
 // and implements the functions to fetch data from those APIs.
 

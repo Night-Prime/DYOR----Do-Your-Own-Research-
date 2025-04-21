@@ -3,8 +3,10 @@ package models
 import (
 	"errors"
 	"time"
+    "fmt"
 
 	"github.com/google/uuid"
+    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 )
 
 type AssetType string
@@ -16,7 +18,7 @@ const (
 )
 
 type AssetBase struct {
-    ID            uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
+    ID            uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
     PortfolioID   uuid.UUID `json:"portfolio_id" gorm:"type:uuid;not null"`
     Symbol        string    `json:"symbol" gorm:"not null"`
     Name          string    `json:"name"`
@@ -113,5 +115,57 @@ func (a *Asset) Validate() error {
     default:
         return errors.New("invalid asset type")
     }
+    return nil
+}
+
+func SaveAssetToDB(asset *Asset) error {
+    asset.AssetBase.ID = uuid.New()
+    asset.AssetBase.CreatedAt = time.Now()
+    asset.AssetBase.UpdatedAt = time.Now()
+
+    db := config.LoadDB()
+    go AutoMigrate()
+
+    // First check if the portfolio exists
+    var portfolio Portfolio
+    if err := db.Where("id = ?", asset.PortfolioID).First(&portfolio).Error; err != nil {
+        return fmt.Errorf("portfolio with ID %s does not exist", asset.PortfolioID)
+    }
+
+    // Then check if asset with same symbol already exists in this portfolio
+    var existingAsset Asset
+    if err := db.Where("portfolio_id = ? AND symbol = ?", asset.PortfolioID, asset.Symbol).First(&existingAsset).Error; err == nil {
+        return fmt.Errorf("asset with symbol %s already exists in portfolio %s", asset.Symbol, asset.PortfolioID)
+    }
+
+    if err := db.Create(asset).Error; err != nil {
+        return fmt.Errorf("error saving asset to database: %v", err)
+    }
+
+    return nil
+}
+
+func DeleteAsset(assetID string) error {
+    db := config.LoadDB()
+
+    if assetID == "" {
+        return fmt.Errorf("Asset ID is required for deletion")
+    }
+
+    assetUUID, err := uuid.Parse(assetID)
+    if err != nil {
+        return fmt.Errorf("Invalid asset ID format")
+    }
+
+    var asset Asset
+
+    if err := db.First(&asset, "id = ?", assetUUID).Error; err != nil {
+        return fmt.Errorf("Error finding asset: %v", err)
+    }
+
+    if err := db.Delete(&asset).Error; err != nil {
+        return fmt.Errorf("Error deleting asset: %v", err)
+    }
+
     return nil
 }

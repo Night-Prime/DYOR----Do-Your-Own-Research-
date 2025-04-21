@@ -32,6 +32,10 @@ func AutoMigrate() error {
     if err := db.AutoMigrate(&Portfolio{}); err != nil {
         return fmt.Errorf("failed to migrate Portfolio: %v", err)
     }
+
+	if err := db.AutoMigrate(&Asset{}); err != nil {
+		return fmt.Errorf("failed to migrate assets : %v", err)
+	}
     
     return nil
 }
@@ -166,7 +170,7 @@ func GetPortfolioForUser(userID uuid.UUID) (*User, error) {
 	}
 
 	var user User
-	if err := db.Preload("Portfolios").First(&user, "id = ?", userID).Error; err != nil {
+	if err := db.Preload("Portfolios").Preload("Portfolios.Assets").First(&user, "id = ?", userID).Error; err != nil {
 		return nil, fmt.Errorf("error getting user with ID %s: %v", userID, err)
 	}
 

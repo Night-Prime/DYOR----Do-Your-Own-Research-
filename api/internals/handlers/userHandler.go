@@ -45,6 +45,24 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdUser)
 }
 
+// auth_handlers.go
+func VerifyUser(w http.ResponseWriter, r *http.Request) {
+    cookie, err := r.Cookie("token")
+    if err != nil {
+        http.Error(w, "No session token", http.StatusUnauthorized)
+        return
+    }
+
+    user, err := service.VerifyUserAuth(cookie.Value)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusUnauthorized)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(user)
+}
+
 func CreatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
 	portfolio := &models.Portfolio{}
 

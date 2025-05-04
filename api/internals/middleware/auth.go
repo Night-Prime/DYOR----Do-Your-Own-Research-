@@ -54,7 +54,7 @@ func getRole(email string) string {
 	}
 }
 
-func validateToken(tokenString string) (string, error) {
+func ValidateToken(tokenString string) (string, error) {
 	cfg := config.Get()
 	var secretKey = []byte(cfg.SecretKey)
 	
@@ -83,7 +83,7 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 		}
 		tokenString := cookie.Value
 
-		email, err := validateToken(tokenString)
+		email, err := ValidateToken(tokenString)
 		if err != nil {
 			http.Error(w, "Unauthorized Admin", http.StatusUnauthorized)
 			return
@@ -103,7 +103,7 @@ func UserAuthMiddleware(next http.Handler) http.Handler {
 		}
 		tokenString := cookie.Value
 
-		email, err := validateToken(tokenString)
+		email, err := ValidateToken(tokenString)
 		if err != nil {
 			http.Error(w, "Unauthorized User", http.StatusUnauthorized)
 			return

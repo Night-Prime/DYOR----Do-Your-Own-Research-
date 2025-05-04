@@ -55,7 +55,7 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 
 	// Set the token as a cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:     "DYOR_token",
+		Name:     "token",
 		Value:    tokenString,
 		Path:     "/",
 		HttpOnly: true,
@@ -94,6 +94,21 @@ func GetPortfolioForUser(userID uuid.UUID) (*models.User, error) {
 	user, err := models.GetPortfolioForUser(userID)
 	if err != nil {
 		return nil, fmt.Errorf("Error Fetching 's' Portfolio")
+	}
+
+	return user, nil
+}
+
+func VerifyUserAuth(cookie string) (*models.User, error) {
+	email, err := middleware.ValidateToken(cookie)
+	if err != nil {
+		return nil, err
+	}
+
+	// also need to check if that particular exists in the DB
+	user, err := models.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil

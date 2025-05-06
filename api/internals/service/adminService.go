@@ -8,7 +8,7 @@ import(
 
 func CreateUser(user *models.User) (*models.User, error) {
 	fmt.Println("Creating a new user in the User Service Layer")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	if err := models.Validate(user); err != nil {
 		return nil, fmt.Errorf("user validation error: %v", err)

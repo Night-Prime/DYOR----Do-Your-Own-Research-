@@ -3,51 +3,51 @@ package service
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
+	"github.com/google/uuid"
 )
 
 // Note: didn't use DI on parts of the code not interacting with external services
 
 func CreateAsset(assetType models.AssetType, symbol string, portfolioID uuid.UUID) (*models.Asset, error) {
-    fmt.Println("Creating an asset in the Asset Service Layer")
-    fmt.Println("---------------------------------------------\n")
+	fmt.Println("Creating an asset in the Asset Service Layer")
+	fmt.Println("---------------------------------------------")
 
-    var asset *models.Asset
-    switch assetType {
-    case models.AssetTypeStock:
-        asset = &models.Asset{
-            AssetBase: models.AssetBase{
-                Type:        models.AssetTypeStock,
-                Symbol:      symbol,
-                PortfolioID: portfolioID,
-                Quantity:    0,
-                CurrentPrice: 0,
-                Volume:      0,
-            },
-            StockData: nil,
-        }
-    case models.AssetTypeCrypto:
-        asset = &models.Asset{
-            AssetBase: models.AssetBase{
-                Type:        models.AssetTypeCrypto,
-                Symbol:      symbol,
-                PortfolioID: portfolioID,
-                Quantity:    0,
-                CurrentPrice: 0,
-                Volume:      0,
-            },
-            CryptoData: nil,
-        }
-    default:
-        return nil, fmt.Errorf("unsupported asset type: %s", assetType)
-    }
+	var asset *models.Asset
+	switch assetType {
+	case models.AssetTypeStock:
+		asset = &models.Asset{
+			AssetBase: models.AssetBase{
+				Type:         models.AssetTypeStock,
+				Symbol:       symbol,
+				PortfolioID:  portfolioID,
+				Quantity:     0,
+				CurrentPrice: 0,
+				Volume:       0,
+			},
+			StockData: nil,
+		}
+	case models.AssetTypeCrypto:
+		asset = &models.Asset{
+			AssetBase: models.AssetBase{
+				Type:         models.AssetTypeCrypto,
+				Symbol:       symbol,
+				PortfolioID:  portfolioID,
+				Quantity:     0,
+				CurrentPrice: 0,
+				Volume:       0,
+			},
+			CryptoData: nil,
+		}
+	default:
+		return nil, fmt.Errorf("unsupported asset type: %s", assetType)
+	}
 
-    if err := models.SaveAssetToDB(asset); err != nil {
-        return nil, fmt.Errorf("error saving asset to database: %v", err)
-    }
+	if err := models.SaveAssetToDB(asset); err != nil {
+		return nil, fmt.Errorf("error saving asset to database: %v", err)
+	}
 
-    return asset, nil
+	return asset, nil
 }
 
 func DeleteAsset(assetID string) error {
@@ -63,14 +63,14 @@ func DeleteAsset(assetID string) error {
 // It handles different asset types such as stocks, bonds, and cryptocurrencies.
 
 type AssetService struct {
-	stockAPIClient StockAPIClient
+	stockAPIClient  StockAPIClient
 	cryptoAPIClient CryptoAPIClient
 	// bondAPIClient BondAPIClient
 }
 
 func NewAssetService(stockAPIClient StockAPIClient, cryptoAPIClient CryptoAPIClient) *AssetService {
 	return &AssetService{
-		stockAPIClient: stockAPIClient,
+		stockAPIClient:  stockAPIClient,
 		cryptoAPIClient: cryptoAPIClient,
 		// bondAPIClient: bondAPIClient,
 	}
@@ -78,7 +78,7 @@ func NewAssetService(stockAPIClient StockAPIClient, cryptoAPIClient CryptoAPICli
 
 func (s *AssetService) GetAsset(assetType models.AssetType, symbols ...string) (*models.Asset, error) {
 	fmt.Println("The Asset Service Layer")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	var asset *models.Asset
 	var err error
@@ -86,9 +86,9 @@ func (s *AssetService) GetAsset(assetType models.AssetType, symbols ...string) (
 	switch assetType {
 	case models.AssetTypeCrypto:
 		if len(symbols) == 0 {
-            return nil, fmt.Errorf("symbols are required for fetching crypto data")
-        }
-        asset, err = s.fetchCrypto(symbols)
+			return nil, fmt.Errorf("symbols are required for fetching crypto data")
+		}
+		asset, err = s.fetchCrypto(symbols)
 	case models.AssetTypeStock:
 		if len(symbols) == 0 {
 			return nil, fmt.Errorf("symbol is required for fetching stock data")
@@ -114,39 +114,39 @@ func (s *AssetService) GetAsset(assetType models.AssetType, symbols ...string) (
 
 // For Stocks:
 func (s *AssetService) fetchStock(symbol string) (*models.Asset, error) {
-    fmt.Println("Getting the data from the Stock API Client Layer", symbol)
-    fmt.Println("--------------------------------------------- \n")
+	fmt.Println("Getting the data from the Stock API Client Layer", symbol)
+	fmt.Println("---------------------------------------------")
 
-    stockData, err := s.stockAPIClient.GetStockData(symbol)
-    if err != nil {
-        return nil, fmt.Errorf("error fetching stock data: %v", err)
-    }
+	stockData, err := s.stockAPIClient.GetStockData(symbol)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching stock data: %v", err)
+	}
 
-    // Check if we have results
-    if len(stockData.Data.QuoteResponse.Result) == 0 {
-        return nil, fmt.Errorf("no stock data found for symbol: %s", symbol)
-    }
-    result := stockData.Data.QuoteResponse.Result[0]
+	// Check if we have results
+	if len(stockData.Data.QuoteResponse.Result) == 0 {
+		return nil, fmt.Errorf("no stock data found for symbol: %s", symbol)
+	}
+	result := stockData.Data.QuoteResponse.Result[0]
 
-    // Create the Asset with properly mapped fields
-    asset := &models.Asset{
-        AssetBase: models.AssetBase{
-            Type:         models.AssetTypeStock,
-            Symbol:       symbol,
-            CurrentPrice: result.RegularMarketPrice.Raw,
-            Volume:       result.RegularMarketVolume.Raw,
-            Name:         result.Name,
-        },
-        StockData: stockData,
-    }
-    
-    return asset, nil
+	// Create the Asset with properly mapped fields
+	asset := &models.Asset{
+		AssetBase: models.AssetBase{
+			Type:         models.AssetTypeStock,
+			Symbol:       symbol,
+			CurrentPrice: result.RegularMarketPrice.Raw,
+			Volume:       result.RegularMarketVolume.Raw,
+			Name:         result.Name,
+		},
+		StockData: stockData,
+	}
+
+	return asset, nil
 }
 
 // For Crypto :
 func (s *AssetService) fetchCrypto(symbols []string) (*models.Asset, error) {
 	fmt.Println("Getting the data from the Crypto API Client Layer")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	cryptoData, err := s.cryptoAPIClient.GetCryptoData(symbols)
 	if err != nil {
@@ -156,7 +156,7 @@ func (s *AssetService) fetchCrypto(symbols []string) (*models.Asset, error) {
 	if len(cryptoData.DataArray) == 0 {
 		return nil, fmt.Errorf("no crypto data found")
 	}
-	
+
 	// Map through every index and create a list of assets
 	var assets []*models.Asset
 	for _, result := range cryptoData.DataArray {
@@ -165,7 +165,7 @@ func (s *AssetService) fetchCrypto(symbols []string) (*models.Asset, error) {
 				Type:         models.AssetTypeCrypto,
 				Symbol:       result.Symbol,
 				Name:         result.Name,
-				CurrentPrice: result.Price, 
+				CurrentPrice: result.Price,
 				Volume:       result.Volume,
 			},
 			CryptoData: cryptoData,

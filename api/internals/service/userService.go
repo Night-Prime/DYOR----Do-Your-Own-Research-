@@ -12,7 +12,7 @@ import (
 
 func Signup(user *models.User) (*models.User, error) {
 	fmt.Println("Creating a new user in the User Service Layer")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	// Encrypt the password before saving the user
 	hashedPassword, err := middleware.HashPassword(user.Password)
@@ -34,7 +34,7 @@ func Signup(user *models.User) (*models.User, error) {
 
 func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	fmt.Println("Logging in user in the User Service Layer")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 	email := *user.Email
 	// Retrieve the user from the database
 	storedUser, err := models.GetUserByEmail(email)
@@ -69,7 +69,7 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 
 func CreatePortfolio(portfolio *models.Portfolio) (*models.Portfolio, error) {
 	fmt.Println("Creating a new portfolio for the User in the User Service Layer")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	if portfolio.UserID.String() == "" {
 		return nil, fmt.Errorf("user ID is required")

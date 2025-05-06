@@ -21,10 +21,10 @@ func main() {
 	db := config.LoadDB()
 
 	fmt.Printf("Successfully connected to database: %v\n", db)
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	fmt.Println("Currently Initializing Server")
-	fmt.Println("--------------------------------------------- \n")
+	fmt.Println("---------------------------------------------")
 
 	// Initialize the router
 	router := chi.NewRouter()

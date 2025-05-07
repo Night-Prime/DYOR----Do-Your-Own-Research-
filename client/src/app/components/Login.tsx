@@ -6,6 +6,7 @@ import { useAppDispatch } from '../hooks/hook';
 import { checkAuthStatus } from '../core/authSlice';
 import { DyorAlert } from '../shared/Alert';
 import { EyeIcon, EyeSlashIcon } from '../data/icons';
+import Preloader from '../shared/Preloader';
 
 interface LoginProps {
   modal: () => void;
@@ -37,7 +38,6 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
         type: 'success',
         message: 'Login successful!'
       });
-      setIsLoading(false);
       setTimeout(() => router.push('/dashboard'), 2000);
     } else {
       setShowAlert({
@@ -50,6 +50,7 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
 
   return (
     <>
+    {isLoading && <Preloader />}
       {showAlert && (
         <DyorAlert
           type={showAlert.type}

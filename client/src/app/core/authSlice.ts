@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { AppDispatch } from "./store";
 
 // initialize the state
 interface AuthState {
@@ -10,7 +11,7 @@ interface AuthState {
 
 const initialState: AuthState = {
     isAuthenticated : false,
-    user: null
+    user: null,
 }
 
 export const authSlice = createSlice({
@@ -26,22 +27,19 @@ export const authSlice = createSlice({
     }
 });
 
-export const checkAuthStatus = () => async(dispatch : any) => {
+export const checkAuthStatus = () => async (dispatch: AppDispatch) => {
     try {
-
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user/verify`, {
-            withCredentials: true
-        })
-
-        if(response.statusText == "OK"){
-            const user = response.data
-            dispatch(loginSuccess({user}))
+        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user/verify`, { 
+            withCredentials: true 
+        });
+        dispatch(loginSuccess(data));
+        return true;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            dispatch(logoutSuccess());
         }
-
-    } catch(error) {
-        console.log("Error: ", error)
+        return false;
     }
-}
-
+};
 export const {loginSuccess, logoutSuccess} = authSlice.actions;
 export default authSlice.reducer;

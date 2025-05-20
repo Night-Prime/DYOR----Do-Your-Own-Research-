@@ -69,7 +69,7 @@ export const DyorAlert: React.FC<DyorAlertProps> = ({
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       <Alert
-        className={`absolute top-4 right-4 w-1/4 rounded-3xl shadow-xl ${alertClasses[type]} p-3`}
+        className={`absolute top-4 right-4 w-1/3 rounded-3xl shadow-xl ${alertClasses[type]} p-3`}
         icon={iconMap[type]}
         variant="filled"
         animate={{
@@ -77,7 +77,7 @@ export const DyorAlert: React.FC<DyorAlertProps> = ({
           unmount: { y: -100, opacity: 0 },
         }}
       >
-          <span className="mx-2"><b>{message}</b></span>
+          <span className="text-sm w-full mx-2"><b>{message}</b></span>
       </Alert>
     </div>
   );

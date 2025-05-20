@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '../hooks/hook';
 import { checkAuthStatus } from '../core/authSlice';
 import { DyorAlert } from '../shared/Alert';
-import { EyeIcon, EyeSlashIcon } from '../data/icons';
+import { EyeIcon, EyeSlashIcon } from '../shared/icons';
 import Preloader from '../shared/Preloader';
 
 interface LoginProps {
@@ -38,6 +38,8 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
         type: 'success',
         message: 'Login successful!'
       });
+
+      localStorage.setItem("user", JSON.stringify(result.data));
       setTimeout(() => router.push('/dashboard'), 2000);
     } else {
       setShowAlert({
@@ -99,7 +101,7 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
                 id="email"
                 name="email"
                 placeholder="Email"
-                className="rounded-md border-gray-300 shadow-sm px-4 py-2 focus:border-lime-500 focus:ring-lime-500 sm:text-sm"
+                className="rounded-3xl border-gray-300 shadow-sm px-4 py-2 focus:border-lime-500 focus:ring-lime-500 sm:text-sm"
                 required
               />
             </div>
@@ -109,7 +111,7 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
                 id="password"
                 name="password"
                 placeholder="*********"
-                className="rounded-md border-gray-300 shadow-sm px-4 py-2 focus:border-lime-500 focus:ring-lime-500 sm:text-sm pr-10"
+                className="rounded-3xl border-gray-300 shadow-sm px-4 py-2 focus:border-lime-500 focus:ring-lime-500 sm:text-sm pr-10"
                 required
               />
               <button
@@ -130,7 +132,7 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-1/3 py-2 px-4 bg-lime-700 text-white font-medium text-sm rounded-md shadow-sm hover:bg-lime-900 focus:outline-none focus:ring-2 focus:ring-lime-900 focus:ring-offset-2 transition duration-300"
+                className="w-1/3 py-2 px-4 bg-lime-700 text-white font-medium text-sm rounded-3xl shadow-sm hover:bg-lime-900 focus:outline-none focus:ring-2 focus:ring-lime-900 focus:ring-offset-2 transition duration-300"
               >
                 {isLoading ? 'Logging in...' : 'Login'}
               </button>

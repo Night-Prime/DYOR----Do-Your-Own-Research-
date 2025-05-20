@@ -27,7 +27,6 @@ export async function signup(state: FormState, formData: FormData) {
                 'Content-Type': 'application/json',
             },
         });
-        console.log("Response: ", response)
         return {
             success: true,
             data: response.data,
@@ -72,7 +71,6 @@ export async function login(state: loginFormState, formData: FormData) {
                 withCredentials: true,
             }
         );
-        console.log("Response: ", response)
 
 
         return {
@@ -80,7 +78,6 @@ export async function login(state: loginFormState, formData: FormData) {
             data: response.data,
         };
     } catch (error) {
-        console.log("Err: ", error);
         if (axios.isAxiosError(error) && error.response) {
             return {
                 success: false,

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
+			"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 func Signup(user *models.User) (*models.User, error) {

@@ -5,8 +5,7 @@ import (
 
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
-		"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 )
 
 type Portfolio struct {

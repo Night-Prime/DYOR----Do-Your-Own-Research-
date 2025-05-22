@@ -7,6 +7,7 @@ import(
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/service"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +38,15 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	
 	createdUser, err := service.Signup(user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest) // 400
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError) // 500
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError) // 500
+        }
+        return
 	}
 
 	// handle portfolio creation:

@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 type User struct {
@@ -42,19 +43,19 @@ func AutoMigrate() error {
 
 func Validate (u *User) error {
 	if u.FirstName == "" {
-		return fmt.Errorf("first name is required")
+		return &errors.ValidationError{Message: "First name is required"}
 	}
 	if u.LastName == "" {
-		return fmt.Errorf("last name is required")
+		return &errors.ValidationError{Message: "Last name is required"}
 	}
 	if u.Email == nil || *u.Email == "" {
-		return fmt.Errorf("email is required")
+		return &errors.ValidationError{Message: "Email is required"}
 	}
 	if u.Role == "" {
-		return fmt.Errorf("role is required")
+		return &errors.ValidationError{Message: "Role is required"}
 	}
 	if u.Password == "" {
-		return fmt.Errorf("password is required")
+		return &errors.ValidationError{Message: "Password is required"}
 	}
 	return nil
 }
@@ -69,10 +70,11 @@ func SaveUserToDB (u *User) error {
 	
 	var existingUser User
 	if err := db.Where("email = ?", u.Email).First(&existingUser).Error; err == nil {
-		return fmt.Errorf("user with email %s already exists", *u.Email)
+		return &errors.DatabaseError{Message: fmt.Sprintf("User with email %s already exists", *u.Email)}
 	}
 	if err := db.Create(u).Error; err != nil {
-		return fmt.Errorf("error saving user to database: %v", err)
+		fmt.Printf("Error occurred: %v", err);
+		return &errors.DatabaseError{Message: "Error saving user to database", Err: err}
 	}
 
 	return nil
@@ -82,10 +84,11 @@ func GetUserByEmail(email string) (*User, error) {
 	db := config.LoadDB()
 	var user User
 	if email == "" {
-		return nil, fmt.Errorf("email is required")
+		return nil, fmt.Errorf("Email is required");
 	}
 	if err := db.First(&user, "email = ?", email).Error; err != nil {
-		return nil, fmt.Errorf("Email %v",err)
+		fmt.Printf("Error Occurred Getting Email: %v", err)
+		return nil, fmt.Errorf("Error Occurred Getting User Email")
 	}
 	return &user, nil
 }
@@ -99,7 +102,7 @@ func GetUserByID(userID string) (*User, error) {
 	}
 
 	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
-		return nil, fmt.Errorf("user with ID %s does not exist", userID)
+		return nil, fmt.Errorf("User with ID %s does not exist", userID)
 	}
 
 	return &user, nil
@@ -109,7 +112,7 @@ func GetAllUsers() ([]User, error) {
 	db := config.LoadDB()
 	var users []User
 	if err := db.Where("role = ?", "user").Find(&users).Error; err != nil {
-		return nil, fmt.Errorf("error getting users with role 'user': %v", err)
+		return nil, fmt.Errorf("Error getting users with role 'user': %v", err)
 	}
 	return users, nil
 }
@@ -118,16 +121,16 @@ func UpdateUser(user *User) error {
 	db := config.LoadDB()
 	user.UpdatedAt = time.Now()
 	if user.ID == uuid.Nil {
-		return fmt.Errorf("user ID is required for update")
+		return fmt.Errorf("User ID is required for update")
 	}
 
 	var existingUser User
 	if err := db.First(&existingUser, "id = ?", user.ID).Error; err != nil {
-		return fmt.Errorf("user with ID %s does not exist", user.ID)
+		return fmt.Errorf("User with ID %s does not exist", user.ID)
 	}
 
 	if err := db.Save(user).Error; err != nil {
-		return fmt.Errorf("error updating user: %v", err)
+		return fmt.Errorf("Error updating user: %v", err)
 	}
 	return nil
 }
@@ -135,16 +138,17 @@ func UpdateUser(user *User) error {
 func DeleteUser(userID string) error {
 	db := config.LoadDB()
 	if userID == "" {
-		return fmt.Errorf("user ID is required for deletion")
+		return fmt.Errorf("User ID is required for deletion")
 	}
 
 	var user User
 	if err := db.First(&user, "id = ?", userID).Error; err != nil {
-		return fmt.Errorf("user with ID %s does not exist", userID)
+		return fmt.Errorf("User with ID %s does not exist", userID)
 	}
 
 	if err := db.Delete(&user).Error; err != nil {
-		return fmt.Errorf("error deleting user: %v", err)
+		fmt.Printf("Error occurred while trying to delete User: %v", err)
+		return fmt.Errorf("Error deleting user")
 	}
 	return nil
 }
@@ -153,10 +157,11 @@ func GetUserByRole(role string) ([]User, error) {
 	db := config.LoadDB()
 	var users []User
 	if role == "" {
-		return nil, fmt.Errorf("role is required")
+		return nil, fmt.Errorf("Role is required")
 	}
 	if err := db.Where("role = ?", role).Find(&users).Error; err != nil {
-		return nil, fmt.Errorf("error getting users by role: %v", err)
+		fmt.Printf("Error getting users by role: %v", err)
+		return nil, fmt.Errorf("Error getting users by role")
 	}
 	return users, nil
 }
@@ -171,7 +176,8 @@ func GetPortfolioForUser(userID uuid.UUID) (*User, error) {
 
 	var user User
 	if err := db.Preload("Portfolios").Preload("Portfolios.Assets").First(&user, "id = ?", userID).Error; err != nil {
-		return nil, fmt.Errorf("error getting user with ID %s: %v", userID, err)
+		fmt.Printf("Error getting user with ID %s: %v", userID, err)
+		return nil, fmt.Errorf("Error getting user with ID %s", userID)
 	}
 
 	for i := range user.Portfolios {

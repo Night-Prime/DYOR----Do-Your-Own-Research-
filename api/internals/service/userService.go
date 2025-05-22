@@ -17,16 +17,19 @@ func Signup(user *models.User) (*models.User, error) {
 	// Encrypt the password before saving the user
 	hashedPassword, err := middleware.HashPassword(user.Password)
 	if err != nil {
-		return nil, fmt.Errorf("error hashing password: %v", err)
-	}
+        return nil, &errors.DatabaseError{
+            Message: "Error hashing password",
+            Err: err,
+        }
+    }
 	user.Password = hashedPassword
 
 	if err := models.Validate(user); err != nil {
-		return nil, fmt.Errorf("user validation error: %v", err)
+		return nil, err
 	}
 
 	if err := models.SaveUserToDB(user); err != nil {
-		return nil, fmt.Errorf("error saving user to database: %v", err)
+		return nil, err
 	}
 
 	return user, nil
@@ -39,6 +42,7 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	// Retrieve the user from the database
 	storedUser, err := models.GetUserByEmail(email)
 	if err != nil {
+		fmt.Printf("Error while saving User: %v", err)
 		return nil, err
 	}
 
@@ -50,6 +54,7 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	// Create a token for the user
 	tokenString, err := middleware.CreateToken(*user.Email)
 	if err != nil {
+		fmt.Printf("Error While creating Token: %v", err)
 		return nil, fmt.Errorf("Error while creating token")
 	}
 

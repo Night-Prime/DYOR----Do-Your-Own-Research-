@@ -14,12 +14,11 @@ import VerticalBarChart from '../shared/charts/VerticalBarChart';
 import RiskRadarChart from '../shared/charts/RadarChart';
 import NegativeAreaChart from '../shared/charts/NegativeCharts';
 import TopPerformingChart from '../shared/charts/TopPerformingChart';
+import { useAppSelector } from '../hooks/hook';
 
 const Feed = () => {
-  // note: would resolve the localStorage reference error later
-  const userJson = localStorage.getItem("user");
-  const userDetails = userJson ? JSON.parse(userJson) : null;
-  const { data, loading, error, refresh } = useFetch<User>("user/portfolio", { id: userDetails.id });
+  const userDetails = useAppSelector((state) => state.auth.user);
+  const { data, loading, error, refresh } = useFetch<User>("user/portfolio", { id: userDetails?.id });
 
   if (loading) return <Preloader />
   if (error) {
@@ -31,7 +30,7 @@ const Feed = () => {
 
   return (
     <>
-      {emptyPortfolio ? (
+      {data && emptyPortfolio ? (
         <Welcome user={data} refresh={refresh} />
       ) : (
         <div className='w-full h-full grid grid-cols-2 rounded-3xl overflow-y-hidden'>

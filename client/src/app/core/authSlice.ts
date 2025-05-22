@@ -2,11 +2,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { AppDispatch } from "./store";
+import { User } from "../data/models";
 
 // initialize the state
 interface AuthState {
     isAuthenticated : boolean;
-    user: null | {id: string; email:string};
+    user: User | null;
 }
 
 const initialState: AuthState = {
@@ -18,9 +19,10 @@ export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers : {
-        loginSuccess: (state, action: PayloadAction<{user: any}>) => {
+        loginSuccess: (state, action: PayloadAction<User>) => {
             state.isAuthenticated = true;
-            state.user = action.payload.user;
+            state.user = action.payload;
+            console.log("State: ", action.payload);
         },
 
         logoutSuccess: () => initialState

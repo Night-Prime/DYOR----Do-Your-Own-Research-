@@ -4,7 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provider } from "react-redux";
 import { ThemeProvider } from "@material-tailwind/react";
-import { store } from "./core/store";
+import { persistor, store } from "./core/store";
+import { PersistGate } from "redux-persist/integration/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
               {children}
+              </PersistGate>
             </Provider>
         </ThemeProvider>
       </body>

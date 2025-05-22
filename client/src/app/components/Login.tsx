@@ -3,7 +3,7 @@ import { login } from '../utils/auth';
 import Image from "next/image";
 import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '../hooks/hook';
-import { checkAuthStatus } from '../core/authSlice';
+import { checkAuthStatus, loginSuccess } from '../core/authSlice';
 import { DyorAlert } from '../shared/Alert';
 import { EyeIcon, EyeSlashIcon } from '../shared/icons';
 import Preloader from '../shared/Preloader';
@@ -34,12 +34,11 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
 
     if (result.success) {
       dispatch(checkAuthStatus());
+      dispatch(loginSuccess(result.data))
       setShowAlert({
         type: 'success',
         message: 'Login successful!'
       });
-
-      localStorage.setItem("user", JSON.stringify(result.data));
       setTimeout(() => router.push('/dashboard'), 2000);
     } else {
       setShowAlert({

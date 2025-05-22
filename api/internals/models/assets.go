@@ -118,31 +118,52 @@ func (a *Asset) Validate() error {
     return nil
 }
 
-func SaveAssetToDB(asset *Asset) error {
-    asset.AssetBase.ID = uuid.New()
-    asset.AssetBase.CreatedAt = time.Now()
-    asset.AssetBase.UpdatedAt = time.Now()
-
+func SaveAssetToDB(assets []*Asset) error {
     db := config.LoadDB()
-    go AutoMigrate()
 
-    // First check if the portfolio exists
+    if len(assets) == 0 {
+        return fmt.Errorf("no assets provided")
+    }
+
+    portfolioID := assets[0].PortfolioID
     var portfolio Portfolio
-    if err := db.Where("id = ?", asset.PortfolioID).First(&portfolio).Error; err != nil {
-        return fmt.Errorf("portfolio with ID %s does not exist", asset.PortfolioID)
+
+    if err := db.Where("id = ?", portfolioID).First(&portfolio).Error; err != nil {
+        return fmt.Errorf("portfolio with ID %s does not exist", portfolioID)
     }
 
-    // Then check if asset with same symbol already exists in this portfolio
-    var existingAsset Asset
-    if err := db.Where("portfolio_id = ? AND symbol = ?", asset.PortfolioID, asset.Symbol).First(&existingAsset).Error; err == nil {
-        return fmt.Errorf("asset with symbol %s already exists in portfolio %s", asset.Symbol, asset.PortfolioID)
+    // Prepare assets
+    var symbols []string
+    for _, asset := range assets {
+        asset.AssetBase.ID = uuid.New()
+        asset.AssetBase.CreatedAt = time.Now()
+        asset.AssetBase.UpdatedAt = time.Now()
+        symbols = append(symbols, asset.Symbol)
     }
 
-    if err := db.Create(asset).Error; err != nil {
-        return fmt.Errorf("error saving asset to database: %v", err)
+    // Check for existing symbols
+    var existingAssets []Asset
+    if err := db.Where("portfolio_id = ? AND symbol IN ?", portfolioID, symbols).Find(&existingAssets).Error; err == nil && len(existingAssets) > 0 {
+        existingSymbols := make([]string, len(existingAssets))
+        for i, a := range existingAssets {
+            existingSymbols[i] = a.Symbol
+        }
+        return fmt.Errorf("Assets with these symbols already exist: %v", existingSymbols)
     }
 
-    return nil
+    tx := db.Begin()
+    defer func() {
+        if r := recover(); r != nil {
+            tx.Rollback()
+        }
+    }()
+
+    if err := tx.CreateInBatches(assets, 100).Error; err != nil {
+        tx.Rollback()
+        return fmt.Errorf("error adding assets to portfolio: %v", err)
+    }
+
+    return tx.Commit().Error
 }
 
 func DeleteAsset(assetID string) error {

@@ -19,7 +19,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	
 	loggedInUser, err := service.Login(w, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	
@@ -29,7 +29,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
@@ -37,6 +37,19 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	
 	createdUser, err := service.Signup(user)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// handle portfolio creation:
+    userPortfolio := &models.Portfolio{
+        UserID:      createdUser.ID,
+        Name:        createdUser.FirstName + "'s Portfolio",
+        TotalValue:  0,
+    }
+
+    _, err = service.CreatePortfolio(userPortfolio)
+	if err != nil{
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

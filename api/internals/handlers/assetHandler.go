@@ -11,34 +11,56 @@ import (
 
 // Note: didn't use DI on parts of the code not interacting with external services
 
-func CreateAssetHandler(w http.ResponseWriter, r *http.Request) {
-	assetRequest := &models.Asset{}
-    if err := json.NewDecoder(r.Body).Decode(&assetRequest); err != nil {
+func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
+    // Define request struct to match your payload
+	type AssetSymbol struct {
+        Symbol string `json:"symbol"`
+        Name   string `json:"name"`
+    }
+
+    type AssetRequest struct {
+        Type        string        `json:"type"`
+        Symbols     []AssetSymbol `json:"symbols"`
+        PortfolioID uuid.UUID     `json:"portfolioID"`
+    }
+
+    var request AssetRequest
+    if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
         http.Error(w, "Invalid request payload", http.StatusBadRequest)
         return
     }
 
-	portfolioID, err := uuid.Parse(assetRequest.PortfolioID.String())
-	if err != nil {
-		http.Error(w, "Invalid portfolio ID format", http.StatusBadRequest)
-		return
-	}
+	if len(request.Symbols) == 0 {
+        http.Error(w, "At least one symbol is required", http.StatusBadRequest)
+        return
+    }
 
-    assetType := models.AssetType(assetRequest.Type)
+	// Convert to symbol map (symbol -> name)
+    symbolMap := make(map[string]string)
+    for _, symbol := range request.Symbols {
+        if symbol.Symbol == "" {
+            http.Error(w, "Symbol cannot be empty", http.StatusBadRequest)
+            return
+        }
+        symbolMap[symbol.Symbol] = symbol.Name
+    }
+
+    // Validate asset type (come back to this)
+    assetType := models.AssetType(request.Type)
     if assetType != models.AssetTypeStock && assetType != models.AssetTypeCrypto {
         http.Error(w, "Invalid asset type", http.StatusBadRequest)
         return
     }
 
-    // Create the asset
-    asset, err := service.CreateAsset(assetType, assetRequest.Symbol, portfolioID)
+    // Create the assets
+    assets, err := service.CreateAsset(assetType, symbolMap, request.PortfolioID)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
 
     w.WriteHeader(http.StatusCreated)
-    json.NewEncoder(w).Encode(asset)
+    json.NewEncoder(w).Encode(assets)
 }
 
 func DeleteAssetHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +79,7 @@ func DeleteAssetHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ( DI happening here):
+// ( DI happening here, the intention here is to connect to an external service/ model to get insights on each assets):
 type AssetHandler struct {
 	assetService  *service.AssetService
 }

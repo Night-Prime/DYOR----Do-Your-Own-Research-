@@ -12,6 +12,11 @@ import (
 )
 
 func main() {
+	type AppError struct{
+		Error 		error
+		Message		string
+		Code		int
+	}
 
 	_, err := config.Load()
 	if err != nil {

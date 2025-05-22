@@ -85,7 +85,7 @@ func GetUserByEmail(email string) (*User, error) {
 		return nil, fmt.Errorf("email is required")
 	}
 	if err := db.First(&user, "email = ?", email).Error; err != nil {
-		return nil, fmt.Errorf("error getting user by Email: %v", err)
+		return nil, fmt.Errorf("Email %v",err)
 	}
 	return &user, nil
 }

@@ -9,50 +9,62 @@ import (
 
 // Note: didn't use DI on parts of the code not interacting with external services
 
-func CreateAsset(assetType models.AssetType, symbol string, portfolioID uuid.UUID) (*models.Asset, error) {
-    fmt.Println("Creating an asset in the Asset Service Layer")
+func CreateAsset(assetType models.AssetType, symbolMap map[string]string, portfolioID uuid.UUID) ([]*models.Asset, error) {
+    fmt.Println("Creating multiple assets in the Asset Service Layer")
     fmt.Println("---------------------------------------------\n")
 
-    var asset *models.Asset
-    switch assetType {
-    case models.AssetTypeStock:
-        asset = &models.Asset{
-            AssetBase: models.AssetBase{
-                Type:        models.AssetTypeStock,
-                Symbol:      symbol,
-                PortfolioID: portfolioID,
-                Quantity:    0,
-                CurrentPrice: 0,
-                Volume:      0,
-            },
-            StockData: nil,
+    var assets []*models.Asset
+
+    for symbol, name := range symbolMap {
+        var asset *models.Asset
+        
+        if name == "" {
+            name = symbol
         }
-    case models.AssetTypeCrypto:
-        asset = &models.Asset{
-            AssetBase: models.AssetBase{
-                Type:        models.AssetTypeCrypto,
-                Symbol:      symbol,
-                PortfolioID: portfolioID,
-                Quantity:    0,
-                CurrentPrice: 0,
-                Volume:      0,
-            },
-            CryptoData: nil,
+
+        switch assetType {
+        case models.AssetTypeStock:
+            asset = &models.Asset{
+                AssetBase: models.AssetBase{
+                    Type:         models.AssetTypeStock,
+                    Symbol:       symbol,
+                    Name:         name,
+                    PortfolioID:  portfolioID,
+                    Quantity:     0,
+                    CurrentPrice: 0,
+                    Volume:       0,
+                },
+                StockData: nil,
+            }
+        case models.AssetTypeCrypto:
+            asset = &models.Asset{
+                AssetBase: models.AssetBase{
+                    Type:         models.AssetTypeCrypto,
+                    Symbol:       symbol,
+                    Name:         name,
+                    PortfolioID:  portfolioID,
+                    Quantity:     0,
+                    CurrentPrice: 0,
+                    Volume:       0,
+                },
+                CryptoData: nil,
+            }
+        default:
+            return nil, fmt.Errorf("unsupported asset type: %s", assetType)
         }
-    default:
-        return nil, fmt.Errorf("unsupported asset type: %s", assetType)
+        assets = append(assets, asset)
     }
 
-    if err := models.SaveAssetToDB(asset); err != nil {
-        return nil, fmt.Errorf("error saving asset to database: %v", err)
+    if err := models.SaveAssetToDB(assets); err != nil {
+        return nil, err
     }
 
-    return asset, nil
+    return assets, nil
 }
 
 func DeleteAsset(assetID string) error {
 	if err := models.DeleteAsset(assetID); err != nil {
-		return fmt.Errorf("Error Deleting Asset: %v", err)
+		return err
 	}
 	return nil
 }

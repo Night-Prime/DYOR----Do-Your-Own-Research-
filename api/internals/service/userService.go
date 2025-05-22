@@ -39,18 +39,18 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	// Retrieve the user from the database
 	storedUser, err := models.GetUserByEmail(email)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving user from database: %v", err)
+		return nil, err
 	}
 
 	// Compare the provided password with the stored hashed password
 	if !middleware.CheckPasswordHash(user.Password, storedUser.Password) {
-		return nil, fmt.Errorf("invalid password")
+		return nil, fmt.Errorf("Invalid password")
 	}
 
 	// Create a token for the user
 	tokenString, err := middleware.CreateToken(*user.Email)
 	if err != nil {
-		return nil, fmt.Errorf("error creating token: %v", err)
+		return nil, fmt.Errorf("Error while creating token")
 	}
 
 	// Set the token as a cookie

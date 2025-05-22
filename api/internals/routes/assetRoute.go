@@ -13,7 +13,7 @@ func AssetRouteHandler() http.Handler {
 
 	router.Group(func(r chi.Router) {
 		r.Use(middleware.UserAuthMiddleware)
-		r.Post("/create-asset", handlers.CreateAssetHandler)
+		r.Post("/create-asset", handlers.CreateAssetsHandler)
 		r.Delete("/delete-asset", handlers.DeleteAssetHandler)
 	})
 

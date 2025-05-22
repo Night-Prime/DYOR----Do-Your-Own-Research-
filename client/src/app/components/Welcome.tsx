@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { Asset, User } from '../data/models';
 import AssetBtn from '../shared/AssetBtn';
@@ -6,7 +7,7 @@ import { saveAssets } from '../utils/api';
 import { DyorAlert } from '../shared/Alert';
 
 interface WelcomeProps {
-    user: User,
+    user: User | null,
     refresh: () => void
 }
 
@@ -39,10 +40,10 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
     };
 
     const saveAsset = async () => {
-        const newPayload = {
+        const newPayload : any = {
             type: 'stock',
             symbols: assets,
-            portfolioID: user.portfolios[0]?.id
+            portfolioID: user?.portfolios[0]?.id
         };
         const response = await saveAssets(newPayload);
 
@@ -56,8 +57,9 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
 
         if (response.success) {
             setAssets([]);
-            refresh();
         }
+
+        refresh();
     }
 
     return (
@@ -76,7 +78,7 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
                 >
                     <div className='w-full h-full flex flex-col gap-4'>
                         <div className='w-full border-b-[0.5px] border-gray'>
-                            <h3 className='text-4xl font-extrabold'>Hello {user.first_name}, Welcome to DYOR </h3>
+                            <h3 className='text-4xl font-extrabold'>Hello {user ? user?.first_name : 'User'}, Welcome to DYOR </h3>
                         </div>
                         <div className='w-full'>
                             <h3 className='text-lg'>Select the financial investments you wish to add to your portfolio below.</h3>

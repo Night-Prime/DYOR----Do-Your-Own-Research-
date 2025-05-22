@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export interface Portfolio {
     id:string;
     user_id: string;
@@ -6,6 +8,7 @@ export interface Portfolio {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
+    assets: any[];
 }
 
 export interface User {

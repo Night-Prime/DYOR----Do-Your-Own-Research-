@@ -20,17 +20,19 @@ const Feed = () => {
   const userJson = localStorage.getItem("user");
   const userDetails = userJson ? JSON.parse(userJson) : null;
   const { data, loading, error, refresh } = useFetch<User>("user/portfolio", { id: userDetails.id });
-  const emptyPortfolio = data?.portfolios.length === 0
 
   if (loading) return <Preloader />
   if (error) {
     return <DyorAlert type="error" message={`${error}`} open={true} autoClose={true} />
   }
 
+  const hasAssets = data?.portfolios?.some(portfolio => portfolio.assets?.length > 0);
+  const emptyPortfolio = !hasAssets;
+
   return (
     <>
       {emptyPortfolio ? (
-        <Welcome user={userDetails} refresh={refresh} />
+        <Welcome user={data} refresh={refresh} />
       ) : (
         <div className='w-full h-full grid grid-cols-2 rounded-3xl overflow-y-hidden'>
           <div className='w-full h-full flex flex-col items-center justify-start'>

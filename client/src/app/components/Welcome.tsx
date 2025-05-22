@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Asset, User } from '../data/models';
 import AssetBtn from '../shared/AssetBtn';
 import { stocks } from '../data/asset';
 import { saveAssets } from '../utils/api';
-import { DyorAlert } from '../shared/Alert';
+import { useAppDispatch } from '../hooks/hook';
+import { showAlert } from '../core/alertSlice';
 
 interface WelcomeProps {
     user: User | null,
@@ -15,62 +16,55 @@ interface WelcomeProps {
 const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [selectedAssets, setSelectedAssets] = useState<{ [key: string]: boolean }>({});
-    const [alert, setAlert] = useState<{
-        open: boolean;
-        type: 'success' | 'error';
-        message: string;
-    }>({
-        open: false,
-        type: 'success',
-        message: ''
-    });
 
-    const addAsset = (stock: { name: string, symbol: string }) => {
-        setAssets(prevAssets => {
-            const exists = prevAssets.some(asset => asset.symbol === stock.symbol);
-            return exists
+    const dispatch = useAppDispatch();
+
+    const toggleAsset = useCallback((stock: Asset) => {
+        setAssets(prevAssets =>
+            prevAssets.some(asset => asset.symbol === stock.symbol)
                 ? prevAssets.filter(asset => asset.symbol !== stock.symbol)
-                : [...prevAssets, stock];
-        });
+                : [...prevAssets, stock]
+        );
 
         setSelectedAssets(prev => ({
             ...prev,
             [stock.symbol]: !prev[stock.symbol]
         }));
-    };
+    }, []);
 
-    const saveAsset = async () => {
-        const newPayload : any = {
-            type: 'stock',
-            symbols: assets,
-            portfolioID: user?.portfolios[0]?.id
-        };
-        const response = await saveAssets(newPayload);
-
-        setAlert({
-            open: true,
-            type: response.success ? 'success' : 'error',
-            message: response.success
-                ? 'Stocks Added Successfully'
-                : 'Stocks couldn\'t be added'
-        });
-
-        if (response.success) {
-            setAssets([]);
+    const handleSaveAssets = useCallback(async () => {
+        const portfolio = user?.portfolios?.[0];
+        
+        if (!portfolio?.id) {
+          return dispatch(showAlert({
+            type: 'error',
+            message: 'No portfolio found'
+          }));
         }
-
-        refresh();
-    }
+      
+        const response = await saveAssets({
+          type: 'stock',
+          symbols: assets,
+          portfolioID: portfolio.id
+        });
+      
+        if (response.success) {
+          dispatch(showAlert({
+            type: 'success',
+            message: 'Stocks added successfully'
+          }));
+          setAssets([]);
+          return refresh();
+        }
+      
+        dispatch(showAlert({
+          type: 'error',
+          message: 'Failed to add stocks'
+        }));
+      }, [assets, user, refresh, dispatch]);
 
     return (
         <div className="w-full h-full fixed inset-0 flex backdrop-blur-sm items-center justify-center overflow-hidden z-40">
-            <DyorAlert
-                type={alert.type}
-                message={alert.message}
-                open={alert.open}
-                autoClose={true}
-                onClose={() => setAlert(prev => ({ ...prev, open: false }))}
-            />
             <div className="absolute inset-0 flex items-start justify-center py-20">
                 <div
                     className="relative bg-white w-full max-w-screen-lg max-h-[80vh] rounded-3xl p-6 shadow-lg z-10 overflow-y-auto"
@@ -89,7 +83,7 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
                                 <div className='w-full h-full py-4'>
                                     <div className='flex flex-wrap gap-3'>
                                         {stocks && stocks.map((stock, i) => (
-                                            <span key={i} onClick={() => addAsset(stock)}>
+                                            <span key={i} onClick={() => toggleAsset(stock)}>
                                                 <AssetBtn name={stock.name} select={!!selectedAssets[stock.symbol]} />
                                             </span>
                                         ))}
@@ -112,7 +106,7 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
 
                             <div className='mt-4 w-full flex flex-row justify-end items-end'>
                                 <button
-                                    onClick={saveAsset}
+                                    onClick={handleSaveAssets}
                                     className="w-1/6 py-2 px-4 bg-lime-700 text-white font-medium text-sm rounded-3xl shadow-sm hover:bg-lime-900 focus:outline-none focus:ring-2 focus:ring-lime-900 focus:ring-offset-2 transition duration-300"
                                 >
                                     Save Portfolio

@@ -4,9 +4,9 @@ import Image from "next/image";
 import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '../hooks/hook';
 import { checkAuthStatus, loginSuccess } from '../core/authSlice';
-import { DyorAlert } from '../shared/Alert';
 import { EyeIcon, EyeSlashIcon } from '../shared/icons';
 import Preloader from '../shared/Preloader';
+import { showAlert } from '../core/alertSlice';
 
 interface LoginProps {
   modal: () => void;
@@ -14,11 +14,6 @@ interface LoginProps {
 
 
 const Login: React.FC<LoginProps> = ({ modal }) => {
-  const [showAlert, setShowAlert] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
@@ -35,16 +30,17 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
     if (result.success) {
       dispatch(checkAuthStatus());
       dispatch(loginSuccess(result.data))
-      setShowAlert({
+      dispatch(showAlert({
         type: 'success',
         message: 'Login successful!'
-      });
+      }));
       setTimeout(() => router.push('/dashboard'), 2000);
     } else {
-      setShowAlert({
+      const error = result.errors
+      dispatch(showAlert({
         type: 'error',
-        message: 'Login failed!'
-      });
+        message: error
+      }));
       setIsLoading(false)
     }
   };
@@ -52,15 +48,6 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
   return (
     <>
     {isLoading && <Preloader />}
-      {showAlert && (
-        <DyorAlert
-          type={showAlert.type}
-          message={showAlert.message}
-          open={true}
-          autoClose={true}
-          onClose={() => setShowAlert(null)}
-        />
-      )}
       <div className="w-full h-full fixed inset-0 flex backdrop-blur-sm items-center justify-center overflow-hidden z-40">
         <div className="absolute inset-0 flex items-center justify-center">
           <Image

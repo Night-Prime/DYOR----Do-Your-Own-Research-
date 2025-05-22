@@ -79,9 +79,10 @@ export async function login(state: loginFormState, formData: FormData) {
         };
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
+            console.log("Err: ", error.response.data);
             return {
                 success: false,
-                errors: error.response.data.errors || { 
+                errors: error.response.data || { 
                     general: ['An error occurred during login.'] 
                 },
             };

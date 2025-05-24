@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/service"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 // Note: didn't use DI on parts of the code not interacting with external services
@@ -55,7 +56,16 @@ func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
     // Create the assets
     assets, err := service.CreateAsset(assetType, symbolMap, request.PortfolioID)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+        switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest) 
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+		case *errors.CustomError:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        }
         return
     }
 
@@ -72,8 +82,17 @@ func DeleteAssetHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := service.DeleteAsset(assetID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+        switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest)
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+		case *errors.CustomError:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+        }
+        return
 	}
 
 	w.WriteHeader(http.StatusNoContent)

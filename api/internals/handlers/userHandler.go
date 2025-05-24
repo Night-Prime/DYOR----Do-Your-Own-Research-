@@ -20,8 +20,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	
 	loggedInUser, err := service.Login(w, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest) 
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        }
+        return
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -40,11 +47,13 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err.(type) {
         case *errors.ValidationError:
-            http.Error(w, err.Error(), http.StatusBadRequest) // 400
+            http.Error(w, err.Error(), http.StatusBadRequest) 
         case *errors.DatabaseError:
-            http.Error(w, err.Error(), http.StatusInternalServerError) // 500
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+		case *errors.CustomError:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
         default:
-            http.Error(w, err.Error(), http.StatusInternalServerError) // 500
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
         }
         return
 	}
@@ -112,8 +121,15 @@ func DeletePortfolioHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := service.DeletePortfolio(id) 
 	if err != nil{
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest) 
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        }
+        return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -129,20 +145,27 @@ func GetPortfolioForUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Validate if the ID is a valid UUID
 	if _, err := uuid.Parse(id); err != nil {
-		http.Error(w, "Invalid ID format, must be a valid UUID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
 		return
 	}
 
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
-		http.Error(w, "Invalid ID format, must be a valid UUID", http.StatusBadRequest)
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
 		return
 	}
 
 	user, err := service.GetPortfolioForUser(parsedID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest) 
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        }
+        return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

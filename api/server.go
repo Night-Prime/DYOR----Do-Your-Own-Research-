@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	// "net/http/pprof"
 	"github.com/rs/cors"
 	"github.com/go-chi/chi/v5"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
@@ -12,11 +13,6 @@ import (
 )
 
 func main() {
-	type AppError struct{
-		Error 		error
-		Message		string
-		Code		int
-	}
 
 	_, err := config.Load()
 	if err != nil {

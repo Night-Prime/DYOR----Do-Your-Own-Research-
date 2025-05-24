@@ -3,9 +3,9 @@ package models
 import (
 	"time"
 
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 type Portfolio struct {
@@ -29,11 +29,11 @@ func SavePortfolioToDB(p *Portfolio) error {
 
 	var existingPortfolio Portfolio
 	if err := db.Where("user_id = ? ", p.UserID).First(&existingPortfolio).Error; err == nil {
-		return fmt.Errorf("Portfolio with %v already exists for User", p.UserID)
+		return &errors.DatabaseError{ Message:"Portfolio with already exists for User", Err: err}
 	}
 
 	if err := db.Create(p).Error; err != nil {
-		return fmt.Errorf("error saving portfolio to database: %v", err)
+		return &errors.DatabaseError{ Message: "error saving portfolio to database", Err: err}
 	}
 
 	return nil
@@ -43,16 +43,16 @@ func DeletePortfolio(portfolioID string) error {
 	db := config.LoadDB()
 
 	if portfolioID == "" {
-		return fmt.Errorf("Portfolio ID is required for deletion")
+		return &errors.ValidationError{ Message:"Portfolio ID is required for deletion"}
 	}
 
 	var portfolio Portfolio
 	if err := db.First(&portfolio, "id = ?", portfolioID).Error; err != nil {
-		return fmt.Errorf("Portfolio does not exist")
+		return &errors.DatabaseError{Message:"Portfolio does not exist", Err: err}
 	}
 
 	if err := db.Delete(&portfolio).Error; err != nil {
-		return fmt.Errorf("Error Deleting Portfolio: %v", err)
+		return  &errors.DatabaseError{Message:"Error Deleting Portfolio", Err:err}
 	}
 
 	return nil

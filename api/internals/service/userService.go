@@ -40,6 +40,7 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	fmt.Println("Logging in user in the User Service Layer")
 	fmt.Println("--------------------------------------------- \n")
 	email := *user.Email
+
 	// Retrieve the user from the database
 	storedUser, err := models.GetUserByEmail(email)
 	if err != nil {
@@ -49,14 +50,16 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 
 	// Compare the provided password with the stored hashed password
 	if !middleware.CheckPasswordHash(user.Password, storedUser.Password) {
-		return nil, fmt.Errorf("Invalid password")
+		return nil, &errors.ValidationError{Message:"Invalid password"}
 	}
 
 	// Create a token for the user
 	tokenString, err := middleware.CreateToken(*user.Email)
 	if err != nil {
-		fmt.Printf("Error While creating Token: %v", err)
-		return nil, fmt.Errorf("Error while creating token")
+		return nil,  &errors.DatabaseError{
+            Message:"Error while creating token",
+			Err: err,
+		}
 	}
 
 	// Set the token as a cookie
@@ -78,11 +81,11 @@ func CreatePortfolio(portfolio *models.Portfolio) (*models.Portfolio, error) {
 	fmt.Println("--------------------------------------------- \n")
 
 	if portfolio.UserID.String() == "" {
-		return nil, fmt.Errorf("user ID is required")
+		return nil, &errors.ValidationError{Message:"user ID is required"}
 	}
 
 	if err := models.SavePortfolioToDB(portfolio); err != nil {
-		return nil, fmt.Errorf("error saving portfolio to database: %v", err)
+		return nil, err
 	}
 
 	return portfolio, nil
@@ -90,7 +93,7 @@ func CreatePortfolio(portfolio *models.Portfolio) (*models.Portfolio, error) {
 
 func DeletePortfolio(portfolioID string) error {
 	if err := models.DeletePortfolio(portfolioID); err != nil{
-		return fmt.Errorf("Error Deleting Portfolio : %v", err)
+		return err
 	}
 
 	return nil
@@ -99,7 +102,7 @@ func DeletePortfolio(portfolioID string) error {
 func GetPortfolioForUser(userID uuid.UUID) (*models.User, error) {
 	user, err := models.GetPortfolioForUser(userID)
 	if err != nil {
-		return nil, fmt.Errorf("Error Fetching 's' Portfolio")
+		return nil, err
 	}
 
 	return user, nil

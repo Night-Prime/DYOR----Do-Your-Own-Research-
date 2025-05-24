@@ -1,12 +1,12 @@
 package models
 
 import (
-	"errors"
-	"time"
     "fmt"
+	"time"
 
 	"github.com/google/uuid"
     "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
+    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 type AssetType string
@@ -102,18 +102,18 @@ func (a *Asset) Validate() error {
     switch a.Type {
     case AssetTypeCrypto:
         if a.CryptoData == nil {
-            return errors.New("crypto_data is required for crypto assets")
+            return &errors.ValidationError{Message:"CryptoData is required for crypto assets"}
         }
     case AssetTypeStock:
         if a.StockData == nil {
-            return errors.New("stock_data is required for stock assets")
+            return &errors.ValidationError{Message:"StockData is required for Stock assets"}
         }
     // case AssetTypeBond:
     //     if a.BondData == nil {
     //         return errors.New("bond_data is required for bond assets")
     //     }
     default:
-        return errors.New("invalid asset type")
+        return &errors.ValidationError{Message:"Invalid Asset type"}
     }
     return nil
 }
@@ -122,14 +122,14 @@ func SaveAssetToDB(assets []*Asset) error {
     db := config.LoadDB()
 
     if len(assets) == 0 {
-        return fmt.Errorf("no assets provided")
+        return &errors.ValidationError{Message:"No assets provided"}
     }
 
     portfolioID := assets[0].PortfolioID
     var portfolio Portfolio
 
     if err := db.Where("id = ?", portfolioID).First(&portfolio).Error; err != nil {
-        return fmt.Errorf("portfolio with ID %s does not exist", portfolioID)
+        return &errors.DatabaseError{Message:"Portfolio does not exist", Err: err}
     }
 
     // Prepare assets
@@ -160,7 +160,7 @@ func SaveAssetToDB(assets []*Asset) error {
 
     if err := tx.CreateInBatches(assets, 100).Error; err != nil {
         tx.Rollback()
-        return fmt.Errorf("error adding assets to portfolio: %v", err)
+        return &errors.DatabaseError{Message:"Error adding assets to portfolio", Err: err}
     }
 
     return tx.Commit().Error
@@ -170,22 +170,22 @@ func DeleteAsset(assetID string) error {
     db := config.LoadDB()
 
     if assetID == "" {
-        return fmt.Errorf("Asset ID is required for deletion")
+        return &errors.ValidationError{Message:"Asset ID is required for deletion"}
     }
 
     assetUUID, err := uuid.Parse(assetID)
     if err != nil {
-        return fmt.Errorf("Invalid asset ID format")
+        return &errors.ValidationError{Message:"Invalid asset ID format"}
     }
 
     var asset Asset
 
     if err := db.First(&asset, "id = ?", assetUUID).Error; err != nil {
-        return fmt.Errorf("Error finding asset: %v", err)
+        return &errors.DatabaseError{Message:"Error finding asset", Err:err}
     }
 
     if err := db.Delete(&asset).Error; err != nil {
-        return fmt.Errorf("Error deleting asset: %v", err)
+        return  &errors.DatabaseError{Message:"Error deleting asset", Err:err}
     }
 
     return nil

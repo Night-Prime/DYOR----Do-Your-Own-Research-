@@ -61,7 +61,6 @@ func main() {
 	apiRouter.Mount("/user", routes.UserRouteHandler())
 	router.Mount("/api/v1", apiRouter)
 
-
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      router,

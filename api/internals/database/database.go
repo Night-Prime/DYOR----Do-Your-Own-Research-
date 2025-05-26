@@ -1,4 +1,3 @@
-// internal/database/database.go
 package database
 
 import (
@@ -33,7 +32,7 @@ func InitializeWithRetry(connStr string) error {
 		if err == nil {
 			sqlDB, err := db.DB()
 			if err != nil {
-				return fmt.Errorf("failed to get database pool: %w", err)
+				return fmt.Errorf("Failed to get database pool: %w", err)
 			}
 
 			// Configure connection pool
@@ -55,7 +54,7 @@ func InitializeWithRetry(connStr string) error {
 		}
 	}
 
-	return fmt.Errorf("failed to connect to database after %d attempts: %w", maxRetries, err)
+	return fmt.Errorf("Failed to connect to database after %d attempts: %w", maxRetries, err)
 }
 
 // GetDB returns the initialized database instance
@@ -67,7 +66,7 @@ func GetDB() *gorm.DB {
 func HealthCheck() error {
 	sqlDB, err := db.DB()
 	if err != nil {
-		return fmt.Errorf("failed to get database pool: %w", err)
+		return fmt.Errorf("Failed to get database pool: %w", err)
 	}
 	return sqlDB.Ping()
 }

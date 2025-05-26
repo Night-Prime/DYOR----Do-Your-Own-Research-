@@ -46,8 +46,6 @@ func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error)
     req.Header.Set("x-rapidapi-key", cfg.StockAPI_Key)
 	req.Header.Set("Accept-Encoding", "application/json")
 
-	// fmt.Printf("Sending the Request: %s\nRequest URL: %s\nHeaders: %v\n", symbol, req.URL.String(), req.Header)
-	// fmt.Println("--------------------------------------------- \n")
 
     res, err := http.DefaultClient.Do(req)
     if err != nil {
@@ -117,8 +115,6 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData,
     }
     req.URL.RawQuery = q.Encode()
 
-    // fmt.Printf("Sending the Request: Request URL: %s\nHeaders: %v\n", req.URL.String(), req.Header)
-	// fmt.Println("--------------------------------------------- \n")
 
     res, err := http.DefaultClient.Do(req)
     if err != nil {
@@ -134,8 +130,6 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData,
     if err != nil {
         return nil, fmt.Errorf("error reading response body: %v", err)
     }
-    // fmt.Printf("The Response Body: %s\n", string(bodyBytes))
-    // fmt.Println("--------------------------------------------- \n")
 
     var apiResponse models.CryptoData
     if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {

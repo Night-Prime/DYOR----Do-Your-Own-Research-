@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
-			"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
 type User struct {
@@ -24,7 +24,7 @@ type User struct {
 }
 
 func AutoMigrate() error {
-    db := config.LoadDB()
+    db := database.GetDB()
     
     if err := db.AutoMigrate(&User{}); err != nil {
         return fmt.Errorf("failed to migrate User: %v", err)
@@ -65,7 +65,7 @@ func SaveUserToDB (u *User) error {
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 
-	db:= config.LoadDB()	
+	db:= database.GetDB()	
 	go AutoMigrate()
 	
 	var existingUser User
@@ -80,7 +80,7 @@ func SaveUserToDB (u *User) error {
 }
 
 func GetUserByEmail(email string) (*User, error) {
-	db := config.LoadDB()
+	db := database.GetDB()
 	var user User
 	if email == "" {
 		return nil, &errors.ValidationError{Message: "Email is required"}
@@ -92,7 +92,7 @@ func GetUserByEmail(email string) (*User, error) {
 }
 
 func GetUserByID(userID string) (*User, error) {
-	db := config.LoadDB()
+	db := database.GetDB()
 	var user User
 
 	if userID == "" {
@@ -107,7 +107,7 @@ func GetUserByID(userID string) (*User, error) {
 }
 
 func GetAllUsers() ([]User, error) {
-	db := config.LoadDB()
+	db := database.GetDB()
 	var users []User
 	if err := db.Where("role = ?", "user").Find(&users).Error; err != nil {
 		return nil, &errors.DatabaseError{Message:"Error occurred getting all users", Err: err}
@@ -116,7 +116,7 @@ func GetAllUsers() ([]User, error) {
 }
 
 func UpdateUser(user *User) error {
-	db := config.LoadDB()
+	db := database.GetDB()
 	user.UpdatedAt = time.Now()
 	if user.ID == uuid.Nil {
 		return &errors.ValidationError{Message: "User ID is required"}
@@ -134,7 +134,7 @@ func UpdateUser(user *User) error {
 }
 
 func DeleteUser(userID string) error {
-	db := config.LoadDB()
+	db := database.GetDB()
 	if userID == "" {
 		return &errors.ValidationError{Message:"User ID is required for deletion"}
 	}
@@ -151,7 +151,7 @@ func DeleteUser(userID string) error {
 }
 
 func GetUserByRole(role string) ([]User, error) {
-	db := config.LoadDB()
+	db := database.GetDB()
 	var users []User
 	if role == "" {
 		return nil, &errors.ValidationError{Message:"Role is required"}
@@ -164,7 +164,7 @@ func GetUserByRole(role string) ([]User, error) {
 }
 
 func GetPortfolioForUser(userID uuid.UUID) (*User, error) {
-	db := config.LoadDB()
+	db := database.GetDB()
 	go AutoMigrate()
 
 	if userID == uuid.Nil {

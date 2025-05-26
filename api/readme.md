@@ -16,4 +16,5 @@ This is the backend service built with Golang to achieve the vision for DYOR.
 - Mission Critical (Zero margin for error)
 
 # Author's Note (danielabatibabatunde1@gmail.com, @Night-Prime):
-The code here is not perfect but would be constantly optimized and refactored till it's near-perfect, this is my first project using Golang. Building something this large and critical because this is my way of learning. Feel free to reach out if you feel there's something not being done right.
+- The code here is not perfect but would be constantly optimized and refactored till it's near-perfect, this is my first project using Golang. Building something this large and critical because this is my way of learning. Feel free to reach out if you feel there's something not being done right.
+- Every comment here is a conversation to myself; i tend to forget things a lot. 

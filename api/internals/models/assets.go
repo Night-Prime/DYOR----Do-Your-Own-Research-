@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
     "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
 type AssetType string
@@ -119,7 +119,7 @@ func (a *Asset) Validate() error {
 }
 
 func SaveAssetToDB(assets []*Asset) error {
-    db := config.LoadDB()
+    db := database.GetDB()
 
     if len(assets) == 0 {
         return &errors.ValidationError{Message:"No assets provided"}
@@ -167,7 +167,7 @@ func SaveAssetToDB(assets []*Asset) error {
 }
 
 func DeleteAsset(assetID string) error {
-    db := config.LoadDB()
+    db := database.GetDB()
 
     if assetID == "" {
         return &errors.ValidationError{Message:"Asset ID is required for deletion"}

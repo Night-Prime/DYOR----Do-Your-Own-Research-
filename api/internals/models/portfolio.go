@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
 type Portfolio struct {
@@ -24,7 +24,7 @@ func SavePortfolioToDB(p *Portfolio) error {
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 
-	db := config.LoadDB()
+	db := database.GetDB()
 	go AutoMigrate()
 
 	var existingPortfolio Portfolio
@@ -40,7 +40,7 @@ func SavePortfolioToDB(p *Portfolio) error {
 }
 
 func DeletePortfolio(portfolioID string) error {
-	db := config.LoadDB()
+	db := database.GetDB()
 
 	if portfolioID == "" {
 		return &errors.ValidationError{ Message:"Portfolio ID is required for deletion"}

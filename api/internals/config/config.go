@@ -3,11 +3,11 @@ package config
 import (
 	"errors"
 	"os"
+	"fmt"
 
-	"gorm.io/gorm"
-	"gorm.io/driver/postgres"
 	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
 var cfg *Config
@@ -28,7 +28,6 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	var err error
 	godotenv.Load()
 
 	// grab port
@@ -90,7 +89,11 @@ func Load() (*Config, error) {
 		SecretKey: secretKey,
 	}
 
-	return cfg, err
+	if err := database.InitializeWithRetry(cfg.ConnStr); err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	return cfg, nil
 }
 
 func Get() *Config {
@@ -98,20 +101,4 @@ func Get() *Config {
 		panic("Failed to load config")
 	}
 	return cfg
-}
-
-func LoadDB() *gorm.DB {
-	// Load the database connection string from environment variables
-	connStr := os.Getenv("DB_URL")
-	if connStr == "" {
-		panic("DB_URL not set in environment variables")
-	}
-
-	// Connect to the database
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
-	if err != nil {
-		panic("Failed to connect to database: " + err.Error())
-	}
-
-	return db
 }

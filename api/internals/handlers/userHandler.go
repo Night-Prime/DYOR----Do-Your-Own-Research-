@@ -1,6 +1,7 @@
 package handlers
 
 import(
+	"time"
 	"net/http"
 	"encoding/json"
 	
@@ -170,4 +171,20 @@ func GetPortfolioForUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
+}
+
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+        Name:     "token",
+        Value:    "",
+        Path:     "/",
+        Expires:  time.Unix(0, 0),
+        HttpOnly: true,
+        Secure:   true,
+        SameSite: http.SameSiteStrictMode,
+    })
+    
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]string{"message": "Successfully logged out"})
 }

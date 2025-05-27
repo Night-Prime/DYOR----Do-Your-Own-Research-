@@ -70,37 +70,35 @@ func main() {
 
 	// Setting up Channel Listeners:
 	serverErrors := make(chan error, 1)
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM )
+    shutdown := make(chan os.Signal, 1)
+    
+    signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
-	go func() {
-		fmt.Println("---------------------------------------------")
-		fmt.Printf(" Starting DYOR Server on port: %s\n", cfg.Port)
-		fmt.Println("---------------------------------------------")
-		serverErrors <- server.ListenAndServe()
-		// basically passing critical system errors into the channel above
-	}()
+    go func() {
+        fmt.Println("---------------------------------------------")
+        fmt.Printf(" Starting DYOR Server on port: %s\n", cfg.Port)
+        fmt.Println("---------------------------------------------")
+        serverErrors <- server.ListenAndServe()
+    }()
 
-	if err := server.ListenAndServe(); err != nil {
-		fmt.Printf("Server failed to start: %v", err)
-	}
+    select {
+    case err := <-serverErrors:
+        log.Fatalf("Server failed to start: %v", err)
 
-	select {
-	case err := <-serverErrors:
-		log.Fatalf("Server error: %v", err)
+    case sig := <-shutdown:
+        log.Printf("Shutdown signal received: %v", sig)
+        
+        ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+        defer cancel() // Important to call cancel to release resources
 
-	case sig := <-shutdown:
-		log.Printf("Shutdown signal received: %v", sig)
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
+        // Attempt graceful shutdown
+        if err := server.Shutdown(ctx); err != nil {
+            log.Printf("Graceful shutdown failed: %v", err)
+            if err := server.Close(); err != nil {
+                log.Fatalf("Force shutdown failed: %v", err)
+            }
+        }
+    }
 
-		if err := server.Shutdown(ctx); err != nil {
-			log.Printf("Graceful shutdown failed: %v", err)
-			if err := server.Close(); err != nil {
-				log.Fatalf("Force shutdown failed: %v", err)
-			}
-		}
-	}
-
-	log.Println("Server stopped")
+    log.Println("Server stopped gracefully")
 }

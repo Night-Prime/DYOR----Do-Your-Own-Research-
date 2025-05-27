@@ -93,3 +93,19 @@ export async function login(state: loginFormState, formData: FormData) {
         };
     }
 }
+
+
+export const logOut = async () => {
+    try {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/logout`);
+        return {
+            success: true,
+        };
+    } catch (error) {
+        console.log("Err: ", error)
+        return {
+            success: false,
+            errors: { general: ['Failed to connect to the login service.'] },
+        };
+    }
+};

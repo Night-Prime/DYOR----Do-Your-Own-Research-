@@ -13,7 +13,7 @@ const Preloader = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        zIndex: 9999,
+        zIndex: 99,
         backgroundColor: "rgba(255, 255, 255, 0.7)",
     };
 

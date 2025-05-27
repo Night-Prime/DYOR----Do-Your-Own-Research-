@@ -20,6 +20,7 @@ func UserRouteHandler() http.Handler {
 
 	router.Post("/signup", handlers.SignupHandler)
 	router.Post("/login", handlers.LoginHandler)
+	router.Post("/logout", handlers.LogoutHandler)
 	router.Get("/verify", handlers.VerifyUser)
 	return router
 }

@@ -6,7 +6,7 @@ const Hero = () => {
       <div className="w-[40%] h-full flex flex-col justify-center items-start gap-2">
         <h1 className="text-xl font-extrabold text-lime-900">What&apos;s D.Y.O.R ?</h1>
         <p className="text-xs font-bold text-lime-800 w-[60%]">
-            Real-time insights for smarter investments in stocks, bonds, and crypto.
+            Your Smart Financial Analyst that manages & preserves your portfolio while providing you with opportunities to make more money.
         </p>
       </div>
 

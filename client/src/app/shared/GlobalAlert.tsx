@@ -6,7 +6,6 @@ import { DyorAlert } from './Alert';
 export const GlobalAlert = () => {
   const alert = useAppSelector((state) => state.alert);
   const dispatch = useAppDispatch();
-    console.log("triggered!");
   return (
     <DyorAlert
       type={alert.type}

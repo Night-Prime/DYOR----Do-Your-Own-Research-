@@ -67,9 +67,9 @@ export const DyorAlert: React.FC<DyorAlertProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50">
+    <div className="fixed inset-0 pointer-events-none z-100">
       <Alert
-        className={`absolute top-4 right-4 w-1/4 rounded-3xl shadow-xl ${alertClasses[type]} p-3`}
+        className={`absolute top-4 right-4 w-1/5 rounded-3xl shadow-xl ${alertClasses[type]} p-3`}
         icon={iconMap[type]}
         variant="filled"
         animate={{

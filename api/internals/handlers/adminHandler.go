@@ -73,24 +73,6 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
-	user := &models.User{}
-
-	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
-		fmt.Println("Error decoding JSON:", err, *user)
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	updatedUser, err := service.UpdateUser(user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(updatedUser)
-}
 
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")

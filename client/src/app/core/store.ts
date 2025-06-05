@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 import authReducer from "./authSlice";
 import alertReducer from "./alertSlice";
+import portfolioReducer from "./portfolioSlice";
 
 // configuration for Persists:
 const persistConfig = {
@@ -16,7 +17,8 @@ const persistAuthReducer = persistReducer(persistConfig, authReducer)
 export const store = configureStore({
     reducer : {
         auth: persistAuthReducer,
-        alert: alertReducer
+        alert: alertReducer,
+        portfolio: portfolioReducer
     },
     middleware: (getDefaultMiddleware) => 
         getDefaultMiddleware({

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useFetch } from '../hooks/useFetch'
 import Preloader from '../shared/Preloader';
 import { DyorAlert } from '../shared/Alert';
@@ -14,19 +14,31 @@ import VerticalBarChart from '../shared/charts/VerticalBarChart';
 import RiskRadarChart from '../shared/charts/RadarChart';
 import NegativeAreaChart from '../shared/charts/NegativeCharts';
 import TopPerformingChart from '../shared/charts/TopPerformingChart';
-import { useAppSelector } from '../hooks/hook';
+import { useAppDispatch, useAppSelector } from '../hooks/hook';
+import { setPortfolio } from '../core/portfolioSlice';
 
 const Feed = () => {
+  const dispatch = useAppDispatch();
   const userDetails = useAppSelector((state) => state.auth.user);
-  const { data, loading, error, refresh } = useFetch<User>("user/portfolio", { id: userDetails?.id });
+  const { data, loading, error, refresh } = useFetch<User>("user/portfolio", { 
+    id: userDetails?.id 
+  });
 
-  if (loading) return <Preloader />
+  // Dispatch portfolio data only when it's available
+  useEffect(() => {
+    if (data?.portfolios?.[0]) {
+      dispatch(setPortfolio(data.portfolios[0]));
+    }
+  }, [data, dispatch]);
+
+  if (loading) return <Preloader />;
   if (error) {
-    return <DyorAlert type="error" message={`${error}`} open={true} autoClose={true} />
+    return <DyorAlert type="error" message={`${error}`} open={true} autoClose={true} />;
   }
 
-  const hasAssets = data?.portfolios?.some(portfolio => portfolio.assets?.length > 0);
-  const emptyPortfolio = !hasAssets;
+  const emptyPortfolio = !data?.portfolios?.some(
+    portfolio => portfolio?.assets?.length > 0
+  );
 
   return (
     <>

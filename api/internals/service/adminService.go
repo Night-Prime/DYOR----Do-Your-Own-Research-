@@ -44,12 +44,6 @@ func GetAllUsers() ([]models.User, error) {
 	return users, nil
 }
 
-func UpdateUser(user *models.User) (*models.User, error) {
-	if err := models.UpdateUser(user); err != nil {
-		return nil, fmt.Errorf("error updating user: %v", err)
-	}
-	return user, nil
-}
 
 func DeleteUser(id string) error {
 	if err := models.DeleteUser(id); err != nil {

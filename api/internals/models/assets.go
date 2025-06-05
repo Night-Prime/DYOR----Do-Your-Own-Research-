@@ -166,6 +166,25 @@ func SaveAssetToDB(assets []*Asset) error {
     return tx.Commit().Error
 }
 
+func UpdateAsset(asset *Asset) error {
+    db := database.GetDB()
+    asset.UpdatedAt = time.Now()
+    
+    if asset.ID == uuid.Nil {
+        return &errors.ValidationError{Message: "Asset ID is required"}
+    }
+
+    var existingAsset Asset
+    if err := db.First(&existingAsset, "id = ?", asset.ID).Error; err != nil {
+        return &errors.DatabaseError{Message: "Asset not found", Err: err}
+    }
+
+    if err := db.Save(asset).Error; err != nil {
+        return &errors.DatabaseError{Message: "Error updating asset", Err: err}
+    }
+    return nil
+}
+
 func DeleteAsset(assetID string) error {
     db := database.GetDB()
 

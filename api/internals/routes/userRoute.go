@@ -15,6 +15,7 @@ func UserRouteHandler() http.Handler {
 		r.Use(middleware.UserAuthMiddleware)
 		r.Get("/portfolio", handlers.GetPortfolioForUserHandler)
 		r.Post("/portfolio", handlers.CreatePortfolioHandler)
+		r.Put("/portfolio", handlers.UpdatePortfolioHandler)
 		r.Delete("/portfolio", handlers.DeletePortfolioHandler)
 	})
 

@@ -8,7 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
-			"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
 func Signup(user *models.User) (*models.User, error) {
@@ -121,4 +122,52 @@ func VerifyUserAuth(cookie string) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+type PortfolioUpdateRequest struct {
+    Portfolio      *models.Portfolio
+    AssetsToAdd    []*models.Asset
+    AssetsToUpdate []*models.Asset
+    AssetsToDelete []uuid.UUID
+}
+
+func UpdateUserPortfolio(req *PortfolioUpdateRequest) (*models.Portfolio, error) {
+    fmt.Println("Updating portfolio and assets in the Portfolio Service Layer")
+    fmt.Println("----------------------------------------------------------")
+
+    if req.Portfolio.ID == uuid.Nil {
+        return nil, &errors.ValidationError{Message: "Portfolio ID is required"}
+    }
+
+    // Verify the portfolio belongs to the user
+    var existingPortfolio models.Portfolio
+    if err := database.GetDB().Where("id = ? AND user_id = ?", 
+        req.Portfolio.ID, req.Portfolio.UserID).First(&existingPortfolio).Error; err != nil {
+        return nil, &errors.DatabaseError{
+            Message: "Portfolio not found or doesn't belong to user", 
+            Err: err,
+        }
+    }
+
+    // Process asset updates
+    if err := models.UpdatePortfolio(
+        req.Portfolio,
+        req.AssetsToAdd,
+        req.AssetsToUpdate,
+        req.AssetsToDelete,
+    ); err != nil {
+        return nil, err
+    }
+
+    // Fetch the updated portfolio with assets
+    var updatedPortfolio models.Portfolio
+    if err := database.GetDB().Preload("Assets").
+        First(&updatedPortfolio, "id = ?", req.Portfolio.ID).Error; err != nil {
+        return nil, &errors.DatabaseError{
+            Message: "Error fetching updated portfolio", 
+            Err: err,
+        }
+    }
+
+    return &updatedPortfolio, nil
 }

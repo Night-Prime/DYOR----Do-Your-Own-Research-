@@ -18,7 +18,6 @@ func AdminRouteHandler() http.Handler {
 		r.Get("/", handlers.GetUserByEmailHandler)
 		r.Get("/id", handlers.GetUserByIDHandler)
 		r.Get("/all", handlers.GetAllUsersHandler)
-		r.Put("/update", handlers.UpdateUserHandler)
 		r.Delete("/delete", handlers.DeleteUserHandler)
 	})
 

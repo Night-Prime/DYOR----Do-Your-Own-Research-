@@ -5,6 +5,8 @@ export interface Portfolio {
     user_id: string;
     name: string;
     total_value: number;
+    investment_goals: string[];
+    asset_preference: string[];
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
@@ -33,7 +35,7 @@ export interface ApiResponse<T> {
 
 export interface Asset {
     name: string;
-    symbol: string
+    symbol: string;
 }
 
 export interface AssetPayload {

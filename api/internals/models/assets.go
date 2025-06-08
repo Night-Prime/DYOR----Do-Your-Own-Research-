@@ -20,7 +20,7 @@ const (
 type AssetBase struct {
     ID            uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
     PortfolioID   uuid.UUID `json:"portfolio_id" gorm:"type:uuid;not null"`
-    Symbol        string    `json:"symbol" gorm:"not null"`
+    Symbol        string    `json:"symbol""`
     Name          string    `json:"name"`
     Type          AssetType `json:"type" gorm:"not null;index"`
     Quantity      float64   `json:"quantity"`

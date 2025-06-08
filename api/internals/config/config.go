@@ -24,6 +24,10 @@ type Config struct {
 	CryptoAPI_Key  string
 	CryptoHostname string
 
+	VANTAGE_URL string
+	VANTAGE_KEY string
+	VANTAGE_FUNCTION string
+
 	SecretKey string
 }
 

@@ -6,33 +6,25 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/handlers"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
+		"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/service"
 )
 
 func AssetRouteHandler() http.Handler {
+	stockClient := service.NewStockClient()
+	cryptoClient := service.NewCryptoClient()
+
+	assetService := service.NewAssetService(stockClient, cryptoClient)
+	assetHandler := handlers.NewAssetHandler(assetService)
+	
+
 	router := chi.NewRouter()
 
 	router.Group(func(r chi.Router) {
 		r.Use(middleware.UserAuthMiddleware)
 		r.Post("/create-asset", handlers.CreateAssetsHandler)
 		r.Delete("/delete-asset", handlers.DeleteAssetHandler)
+		r.Get("/get-live-update", assetHandler.GetAssetHandler)
 	})
 
 	return router
 }
-
-// func AssetRouteHandler() http.Handler {
-// 	stockClient := service.NewStockClient()
-// 	cryptoClient := service.NewCryptoClient()
-// 	// bondClient := service.NewBondClient()
-	
-// 	assetService := service.NewAssetService(stockClient, cryptoClient)
-	
-// 	// Create handler
-// 	assetHandler := handlers.NewAssetHandler(assetService)
-
-// 	router := chi.NewRouter()
-// 	router.Get("/get-live-update", assetHandler.GetAssetHandler)
-	
-// 	return router
-// }
-

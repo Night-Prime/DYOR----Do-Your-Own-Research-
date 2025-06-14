@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
+    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 // Note: didn't use DI on parts of the code not interacting with external services
@@ -88,93 +89,70 @@ func NewAssetService(stockAPIClient StockAPIClient, cryptoAPIClient CryptoAPICli
 	}
 }
 
-func (s *AssetService) GetAsset(assetType models.AssetType, symbols ...string) (*models.Asset, error) {
-	fmt.Println("The Asset Service Layer")
-	fmt.Println("--------------------------------------------- \n")
-
-	var asset *models.Asset
-	var err error
-
-	switch assetType {
-	case models.AssetTypeCrypto:
-		if len(symbols) == 0 {
-            return nil, fmt.Errorf("Symbols are required for fetching crypto data")
-        }
-        asset, err = s.fetchCrypto(symbols)
-	case models.AssetTypeStock:
-		if len(symbols) == 0 {
-			return nil, fmt.Errorf("Symbol is required for fetching stock data")
-		}
-		symbol := symbols[0]
-		asset, err = s.fetchStock(symbol)
-	// case models.AssetTypeBond:
-	// 	asset, err = s.fetchBond()
-	default:
-		return nil, fmt.Errorf("Unsupported asset type: %s", assetType)
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("Error fetching asset data: %v", err)
-	}
-
-	if err := asset.Validate(); err != nil {
-		return nil, fmt.Errorf("Asset validation error: %v", err)
-	}
-
-	return asset, nil
+func (s *AssetService) GetAssets(assetType models.AssetType, symbols ...string) ([]*models.Asset, error) {
+    switch assetType {
+    case models.AssetTypeStock:
+        return s.fetchStocks(symbols)
+    case models.AssetTypeCrypto:
+        return s.fetchCrypto(symbols)
+    default:
+        return nil, fmt.Errorf("unsupported asset type: %s", assetType)
+    }
 }
 
-// For Stocks:
-func (s *AssetService) fetchStock(symbol string) (*models.Asset, error) {
-    fmt.Println("Getting the data from the Stock API Client Layer", symbol)
-    fmt.Println("--------------------------------------------- \n")
-
-    stockData, err := s.stockAPIClient.GetStockData(symbol)
-    if err != nil {
-        return nil, fmt.Errorf("Error fetching stock data: %v", err)
-    }
-
-    // Check if we have results
-    if len(stockData.Data.QuoteResponse.Result) == 0 {
-        return nil, fmt.Errorf("No stock data found for symbol: %s", symbol)
-    }
-    result := stockData.Data.QuoteResponse.Result[0]
-
-    // Create the Asset with properly mapped fields
-    asset := &models.Asset{
-        AssetBase: models.AssetBase{
-            Type:         models.AssetTypeStock,
-            Symbol:       symbol,
-            CurrentPrice: result.RegularMarketPrice.Raw,
-            Volume:       result.RegularMarketVolume.Raw,
-            Name:         result.Name,
-        },
-        StockData: stockData,
+func (s *AssetService) fetchStocks(symbols []string) ([]*models.Asset, error) {
+    var assets []*models.Asset
+    
+    for _, symbol := range symbols {
+        stockDataList, err := s.stockAPIClient.GetStockData(symbol)
+        if err != nil {
+            return nil, err
+        }
+        
+        for _, stockData := range stockDataList {
+            assets = append(assets, &models.Asset{
+                AssetBase: models.AssetBase{
+                    Symbol: stockData.Symbol,
+                    Name:   stockData.Name,
+                    Type:   models.AssetTypeStock,
+                },
+                StockData: &stockData,
+            })
+        }
     }
     
-    return asset, nil
+    if len(assets) == 0 {
+        return nil, &errors.ValidationError{
+            Message: "No stock found",
+        }
+    }
+    
+    return assets, nil
 }
 
-// For Crypto :
-func (s *AssetService) fetchCrypto(symbols []string) (*models.Asset, error) {
-	fmt.Println("Getting the data from the Crypto API Client Layer")
-	fmt.Println("--------------------------------------------- \n")
-
-	cryptoData, err := s.cryptoAPIClient.GetCryptoData(symbols)
-	if err != nil {
-		return nil, fmt.Errorf("Error fetching crypto data: %v", err)
-	}
-
-	if len(cryptoData.DataArray) == 0 {
-		return nil, fmt.Errorf("No crypto data found")
-	}
-	
-    asset := &models.Asset{
-        AssetBase: models.AssetBase{
-            Type: models.AssetTypeCrypto,
-        },
-        CryptoData: cryptoData,
+func (s *AssetService) fetchCrypto(symbols []string) ([]*models.Asset, error) {
+    cryptoDataList, err := s.cryptoAPIClient.GetCryptoData(symbols)
+    if err != nil {
+        return nil, err
     }
-
-	return asset, nil
+    
+    var assets []*models.Asset
+    for _, cryptoData := range cryptoDataList {
+        assets = append(assets, &models.Asset{
+            AssetBase: models.AssetBase{
+                Symbol: cryptoData.Symbol,
+                Name:   cryptoData.Name,
+                Type:   models.AssetTypeCrypto,
+            },
+            CryptoData: &cryptoData,
+        })
+    }
+    
+    if len(assets) == 0 {
+        return nil, &errors.ValidationError{
+            Message: "No crypto found",
+        }
+    }
+    
+    return assets, nil
 }

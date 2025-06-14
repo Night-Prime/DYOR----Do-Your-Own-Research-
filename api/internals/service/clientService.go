@@ -9,17 +9,18 @@ import (
 
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
+    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
 )
 
 // Here, this service is responsible for fetching data from various APIs.
-// It defines interfaces for different asset types (stocks, bonds, and cryptocurrencies)
+// It defines interfaces for different asset types (stocks, bonds, news and cryptocurrencies)
 // and implements the functions to fetch data from those APIs.
 
 // (Lot of Dependency Injection happening here)
 
 // For Stock:
 type StockAPIClient interface {
-	GetStockData(symbol string) (*models.StockData, error)
+    GetStockData(symbol string) ([]models.StockData, error)
 }
 
 func NewStockClient() StockAPIClient {
@@ -28,18 +29,25 @@ func NewStockClient() StockAPIClient {
 
 type stockClientImpl struct{}
 
-func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error) {
+func (c *stockClientImpl) GetStockData(symbol string) ([]models.StockData, error) {
 
 	fmt.Println("The Stock API Client Layer")
 	fmt.Println("--------------------------------------------- \n")
 
     cfg := config.Get()
 
-	// make the request to the stock API
-    url := fmt.Sprintf("%s?symbols=%s", cfg.StockAPI_URL, symbol)
+    queryParams := map[string]string{
+        "symbols": symbol,
+    }
+
+    // construct the URL with query parameters
+    url := fmt.Sprintf("%s?%s", cfg.StockAPI_URL, "symbols="+queryParams["symbols"])
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
-        return nil, fmt.Errorf("request error: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Request Error",
+            Err: err,
+        }
     }
 
     req.Header.Set("x-rapidapi-host", cfg.StockHostname)
@@ -49,34 +57,45 @@ func (c *stockClientImpl) GetStockData(symbol string) (*models.StockData, error)
 
     res, err := http.DefaultClient.Do(req)
     if err != nil {
-        return nil, fmt.Errorf("response error: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Request Error",
+            Err: err,
+        }
     }
     defer res.Body.Close()
 
     if res.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("error: %s", res.Status)
+        return nil, fmt.Errorf("Error: %s", res.Status)
     }
 
 	bodyBytes, err := io.ReadAll(res.Body)
     if err != nil {
-        return nil, fmt.Errorf("error reading response body: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Error reading response",
+            Err: err,
+        }
     }
 
-    var apiResponse models.StockData
+    var apiResponse models.StockAPIResponse
     if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
-        return nil, fmt.Errorf("decoding error: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Decoding Error",
+            Err: err,
+        }
     }
 
     if len(apiResponse.Data.QuoteResponse.Result) == 0 {
-        return nil, fmt.Errorf("no stock data found for symbol %s", symbol)
+        return nil, &errors.ValidationError{
+            Message: "Decoding Error",
+        }
     }
+    return apiResponse.Data.QuoteResponse.Result, nil
 
-	return &apiResponse, nil
 }
 
 // For Crypto:
 type CryptoAPIClient interface {
-	GetCryptoData(symbols []string) (*models.CryptoData, error)
+	GetCryptoData(symbols []string) ([]models.CryptoData, error)
 }
 
 func NewCryptoClient() CryptoAPIClient {
@@ -85,7 +104,7 @@ func NewCryptoClient() CryptoAPIClient {
 
 type cryptoClientImpl struct {}
 
-func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData, error) {
+func (c *cryptoClientImpl) GetCryptoData (symbols []string) ([]models.CryptoData, error) {
 
     fmt.Println("The Crypto API Client Layer")
 	fmt.Println("--------------------------------------------- \n")
@@ -99,7 +118,10 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData,
 
     req, err := http.NewRequest("GET", cfg.CryptoAPI_URL, nil)
     if err != nil {
-        return nil, fmt.Errorf("Request error: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Request Error",
+            Err: err,
+        }
     }
 
     // adding the queries
@@ -118,7 +140,10 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData,
 
     res, err := http.DefaultClient.Do(req)
     if err != nil {
-        return nil, fmt.Errorf("Response error: %v ", err)
+        return nil, &errors.DatabaseError{
+            Message: "Response Error",
+            Err: err,
+        }
     }
     defer res.Body.Close()
 
@@ -128,22 +153,33 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) (*models.CryptoData,
 
     bodyBytes, err := io.ReadAll(res.Body)
     if err != nil {
-        return nil, fmt.Errorf("Error reading response body: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Response Error",
+            Err: err,
+        }
     }
 
-    var apiResponse models.CryptoData
+    var apiResponse models.CryptoAPIResponse
     if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
-        return nil, fmt.Errorf("decoding error: %v", err)
+        return nil, &errors.DatabaseError{
+            Message: "Decoding Error",
+            Err: err,
+        }
     }
 
-    // might end up setting up a cache to store the data for a while
-    return &apiResponse, nil
+    if len(apiResponse.DataArray) == 0 {
+        return nil, &errors.ValidationError{
+            Message: "Request Error",
+        }
+    }
+    return apiResponse.DataArray, nil
 
 }
 
 // For News:
 type NewsAPIClient interface {
-    GetNewsData() (*models.News, error)
+    GetNewsData() ([]*models.News, error)
+    GetTopGainersLosers() (*models.TickerUpdates, error)
 }
 
 func NewsClient() NewsAPIClient {
@@ -152,7 +188,7 @@ func NewsClient() NewsAPIClient {
 
 type newsClientImpl struct{}
 
-func (c *newsClientImpl) GetNewsData() (*models.News, error) {
+func (c *newsClientImpl) GetNewsData() ([]*models.News, error) {
     
     fmt.Println("The News API Client Layer")
     fmt.Println("--------------------------------------------- \n")
@@ -178,10 +214,9 @@ func (c *newsClientImpl) GetNewsData() (*models.News, error) {
         q.Add(key, value)
     }
     req.URL.RawQuery = q.Encode()
-
     res, err := http.DefaultClient.Do(req)
     if err != nil {
-        return nil, fmt.Errorf("Response error: %v", err)
+        return nil, err
     }
     defer res.Body.Close()
 
@@ -194,13 +229,70 @@ func (c *newsClientImpl) GetNewsData() (*models.News, error) {
         return nil, fmt.Errorf("Error reading response body: %v", err)
     }
 
-    fmt.Println("Response Body: ", string(bodyBytes));
+    var wrapper struct {
+        Feed []models.News `json:"feed"`
+    }
 
-    var apiResponse models.News
+    if err := json.Unmarshal(bodyBytes, &wrapper); err != nil {
+        return nil, fmt.Errorf("Decoding error: %v", err)
+    }
+
+    if len(wrapper.Feed) == 0 {
+        return nil, fmt.Errorf("No news feed items found")
+    }
+
+    newsPtrList := make([]*models.News, len(wrapper.Feed))
+    for i := range wrapper.Feed {
+        newsPtrList[i] = &wrapper.Feed[i]
+    }
+
+    return newsPtrList, nil
+}
+
+
+func (c *newsClientImpl) GetTopGainersLosers() (*models.TickerUpdates, error) {
+    fmt.Println("The News API Client Layer")
+    fmt.Println("--------------------------------------------- \n")
+
+    cfg := config.Get()
+
+    // making the request
+    queryParams := map[string]string{
+        "function": cfg.VANTAGE_FUNCTION_TOP,
+        "apikey": cfg.VANTAGE_KEY,
+    }
+
+    req, err := http.NewRequest("GET", cfg.VANTAGE_URL, nil)
+    if err != nil {
+        return nil, fmt.Errorf("Request error: %v", err)
+    }
+
+    // adding the queries
+    q := req.URL.Query()
+    for key, value := range queryParams {
+        q.Add(key, value)
+    }
+    req.URL.RawQuery = q.Encode()
+    res, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("Error: %s", res.Status)
+    }
+
+    bodyBytes, err := io.ReadAll(res.Body)
+    if err != nil {
+        return nil, fmt.Errorf("Error reading response body: %v", err)
+    }
+
+    var apiResponse models.TickerUpdates
+
     if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
         return nil, fmt.Errorf("Decoding error: %v", err)
     }
 
     return &apiResponse, nil
-
 }

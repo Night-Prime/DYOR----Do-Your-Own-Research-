@@ -27,6 +27,7 @@ type Config struct {
 	VANTAGE_URL string
 	VANTAGE_KEY string
 	VANTAGE_FUNCTION string
+	VANTAGE_FUNCTION_TOP string
 
 	SecretKey string
 }
@@ -81,6 +82,26 @@ func Load() (*Config, error) {
 		return nil, errors.New("SECRET_KEY not set in environment variables")
 	}
 
+	vantageURL := os.Getenv("VANTAGE_URL")
+	if vantageURL == "" {
+		return nil, errors.New("VANTAGE_URL not set in environment variables")
+	}
+
+	vantageKey := os.Getenv("VANTAGE_KEY")
+	if vantageKey == "" {
+		return nil, errors.New("VANTAGE_KEY not set in environment variables")
+	}
+
+	vantageFunction := os.Getenv("VANTAGE_FUNCTION")
+	if vantageFunction == "" {
+		return nil, errors.New("VANTAGE_FUNCTION not set in environment variables")
+	}
+
+	vantageFunctionTop := os.Getenv("VANTAGE_FUNCTION_TOP")
+	if vantageFunctionTop == "" {
+		return nil, errors.New("VANTAGE_FUNCTION_TOP not set in environment variables")
+	}
+
 	cfg =  &Config{
 		Port: port,
 		ConnStr: connStr,
@@ -91,6 +112,10 @@ func Load() (*Config, error) {
 		CryptoAPI_URL: cryptoAPI_URL,
 		CryptoHostname: cryptoHostname,
 		SecretKey: secretKey,
+		VANTAGE_URL: vantageURL,
+		VANTAGE_KEY: vantageKey,
+		VANTAGE_FUNCTION: vantageFunction,
+		VANTAGE_FUNCTION_TOP: vantageFunctionTop,
 	}
 
 	if err := database.InitializeWithRetry(cfg.ConnStr); err != nil {

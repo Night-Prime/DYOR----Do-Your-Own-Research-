@@ -1,6 +1,7 @@
 package handlers
 
 import (
+    "strings"
 	"net/http"
 	"encoding/json"
 
@@ -98,7 +99,7 @@ func DeleteAssetHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ( DI happening here, the intention here is to connect to an external service/ model to get insights on each assets):
+// ( DI happening here (i don't think it should get to this level), the intention here is to connect to an external service/ model to get insights on each assets):
 type AssetHandler struct {
 	assetService  *service.AssetService
 }
@@ -109,44 +110,55 @@ func NewAssetHandler(assetService *service.AssetService) *AssetHandler {
 	}
 }
 
-
 func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the asset type from the request
-	assetTypeStr := r.URL.Query().Get("type")
+    query := r.URL.Query()
+    
+    response := struct {
+        Stocks []*models.Asset `json:"stocks,omitempty"`
+        Crypto []*models.Asset `json:"crypto,omitempty"`
+        Errors []string        `json:"errors,omitempty"`
+    }{}
 
-	// parse the asset type
-	assetType := models.AssetType(assetTypeStr)
+    if stockSymbols := query.Get("stock_symbols"); stockSymbols != "" {
+        symbols := strings.Split(stockSymbols, ",")
+        stocks, err := h.assetService.GetAssets(models.AssetTypeStock, symbols...)
+        if err != nil {
+            switch err.(type) {
+            case *errors.ValidationError:
+                http.Error(w, err.Error(), http.StatusBadRequest) 
+            case *errors.DatabaseError:
+                http.Error(w, err.Error(), http.StatusInternalServerError) 
+            default:
+                http.Error(w, err.Error(), http.StatusInternalServerError) 
+            }
+            return
+        }
+        response.Stocks = stocks
+    }
+    
+    if cryptoSymbols := query.Get("crypto_symbols"); cryptoSymbols != "" {
+        symbols := strings.Split(cryptoSymbols, ",")
+        cryptos, err := h.assetService.GetAssets(models.AssetTypeCrypto, symbols...)
+        if err != nil {
+            switch err.(type) {
+            case *errors.ValidationError:
+                http.Error(w, err.Error(), http.StatusBadRequest) 
+            case *errors.DatabaseError:
+                http.Error(w, err.Error(), http.StatusInternalServerError) 
+            default:
+                http.Error(w, err.Error(), http.StatusInternalServerError) 
+            }
+            return
+        }
+        response.Crypto = cryptos
+    }
 
-	var asset interface{}
-	var err error
-
-	switch assetType {
-	case "stock":
-		symbol := r.URL.Query().Get("symbols")
-		asset, err = h.assetService.GetAsset(assetType, symbol)
-	case "crypto":
-		// Get all symbol values from query params
-		symbols := r.URL.Query()["symbols"]
-		if len(symbols) == 0 {
-			http.Error(w, "at least one symbol is required", http.StatusBadRequest)
-			return
-		}
-		
-		// Convert to variadic arguments
-		args := make([]string, 0, len(symbols))
-		args = append(args, symbols...)
-		
-		asset, err = h.assetService.GetAsset(assetType, args...)
-	default:
-		http.Error(w, "Invalid asset type", http.StatusBadRequest)
-		return
-	}
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(asset)
+    
+    if len(response.Stocks) == 0 && len(response.Crypto) == 0 && len(response.Errors) == 0 {
+        http.Error(w, "No valid asset types or symbols provided", http.StatusBadRequest)
+        return
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }

@@ -17,6 +17,19 @@ const (
 	AssetTypeCrypto AssetType = "crypto"
 )
 
+type StockAPIResponse struct {
+    Data struct {
+        QuoteResponse struct {
+            Result []StockData `json:"result"`
+        } `json:"quoteResponse"`
+    } `json:"data"`
+}
+
+type CryptoAPIResponse struct{
+    Data      map[string]interface{} `json:"data"`
+    DataArray []CryptoData `json:dataArray`
+}
+
 type AssetBase struct {
     ID            uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
     PortfolioID   uuid.UUID `json:"portfolio_id" gorm:"type:uuid;not null"`
@@ -31,8 +44,6 @@ type AssetBase struct {
 }
 
 type CryptoData struct {
-    Data      map[string]interface{} `json:"data"`
-    DataArray []struct {
         Key                string `json:"key"`
         ID                 int    `json:"id"`
         Name               string `json:"name"`
@@ -54,36 +65,28 @@ type CryptoData struct {
         PriceChange7D      float64 `json:"price_change_7d"`
         PriceChange1M      float64 `json:"price_change_1m"`
         PriceChange1Y      float64 `json:"price_change_1y"`
-    } `json:"dataArray"`
 }
 
 type StockData struct {
-    Status int `json:"status" gorm:"-"`
-    Data   struct {
-        QuoteResponse struct {
-            Result []struct {
-                RegularMarketPrice struct {
-                    Raw float64 `json:"raw"`
-                } `json:"regularMarketPrice"`
-                MarketCap struct {
-                    Raw float64 `json:"raw"`
-                } `json:"marketCap"`
-                RegularMarketVolume struct {
-                    Raw float64 `json:"raw"`
-                } `json:"regularMarketVolume"`
-                Name              string  `json:"longName"`
-                Exchange          string  `json:"exchange"`
-                SharesOutstanding struct {
-                    Raw float64 `json:"raw"`
-                } `json:"sharesOutstanding"`
-                RegularMarketChange struct {
-                    Raw float64 `json:"raw"`
-                } `json:"regularMarketChange"`
-            } `json:"result"`
-        } `json:"quoteResponse"`
-    } `json:"data"`
+    Symbol  string  `json:"symbol"`
+    RegularMarketPrice struct {
+        Raw float64 `json:"raw"`
+    } `json:"regularMarketPrice"`
+    MarketCap struct {
+        Raw float64 `json:"raw"`
+    } `json:"marketCap"`
+    RegularMarketVolume struct {
+        Raw float64 `json:"raw"`
+    } `json:"regularMarketVolume"`
+    Name              string  `json:"longName"`
+    Exchange          string  `json:"exchange"`
+    SharesOutstanding struct {
+        Raw float64 `json:"raw"`
+    } `json:"sharesOutstanding"`
+    RegularMarketChange struct {
+        Raw float64 `json:"raw"`
+    } `json:"regularMarketChange"`
 }
-
 // type BondData struct {
 //     YieldToMaturity   float64 `json:"yield_to_maturity"`
 //     MaturityDate      string  `json:"maturity_date"`

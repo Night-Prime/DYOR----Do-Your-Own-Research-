@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/handlers"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/middleware"
-		"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/service"
+	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/service"
 )
 
 func AssetRouteHandler() http.Handler {

@@ -1,39 +1,40 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const TopPerformingChart = () => {
-    // Data showing positive growth trend for top performers
-    const data = [
-        {
-            name: 'BTC',
-            value: 2800,
-        },
-        {
-            name: 'GOLD',
-            value: 1200,
-        },
-        {
-            name: 'AAPL',
-            value: 2100,
-        },
-        {
-            name: 'FTSE',
-            value: 3100,
-        },
-        {
-            name: 'USD',
-            value: 3800,
-        },
-    ];
+const TopPerformingChart = ({tickers}) => {
+    const top5Data = useMemo(() => {
+        const sorted = tickers
+            .slice()
+            .sort((a, b) =>
+                parseFloat(b.change_percentage.replace('%', '')) -
+                parseFloat(a.change_percentage.replace('%', ''))
+            )
+            .slice(0, 5)
+            .reverse();
+    
+        const data = sorted.map((ticker) => ({
+            name: ticker.ticker,
+            value: parseFloat(ticker.change_percentage.replace('%', '')),
+            amount: parseFloat(ticker.price)
+        }));
+    
+        const mean =
+            data.reduce((sum, item) => sum + item.value, 0) / data.length || 0;
+    
+        return { data, mean };
+    }, [tickers]);
+    
+    
 
     // Custom tooltip formatter
     const renderTooltip = ({ active, payload, label }) => {
+        console.log("Payload: ", payload);
         if (active && payload && payload.length) {
             return (
                 <div className="bg-white p-2 border border-gray-200 rounded shadow-sm">
                     <p className="font-medium text-gray-800">{label}</p>
                     <p className="text-emerald-600">
-                        ${payload[0].value.toLocaleString()}
+                        {payload[0].value.toLocaleString()}
                     </p>
                 </div>
             );
@@ -44,15 +45,15 @@ const TopPerformingChart = () => {
     return (
         <div className="w-full h-80 p-4 bg-white rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">Top Performing Assets</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Top Performing Assets </h3>
                 <div className="text-sm font-medium text-emerald-600">
-                    +189% YTD
+                    +{top5Data.mean.toFixed((2))}% YTD
                 </div>
             </div>
 
             <ResponsiveContainer width="100%" height="85%">
                 <AreaChart
-                    data={data}
+                    data={top5Data.data}
                     margin={{
                         top: 5,
                         right: 30,
@@ -71,8 +72,8 @@ const TopPerformingChart = () => {
                         tick={{ fill: '#666', fontSize: 12 }}
                         axisLine={false}
                         tickLine={false}
-                        tickFormatter={(value) => `$${value / 1000}k`} // Format as $Xk
-                        domain={[0, 'dataMax + 1000']} // Add some space above the highest value
+                        tickFormatter={(value) => `${value}%`} // Format as $Xk
+                        domain={[0, 'dataMax']} 
                     />
                     <Tooltip content={renderTooltip} />
                     <defs>

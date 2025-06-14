@@ -2,7 +2,7 @@ import axios from "axios";
 import { ApiResponse, AssetPayload} from "../data/models";
 import { UpdatePortfolioFormState, UpdatePortfolioSchema } from "./validation";
 
-// here, all api calls are made:
+// here, all api calls are made to the server directly:
 
 axios.defaults.withCredentials = true;
 
@@ -77,10 +77,6 @@ export async function updatePortfolio(
     return handleApiError(error);
   }
 }
-
-
-
-
 
 // API Utils function:
 export const handleApiError = (error: unknown): ApiResponse<never> => {

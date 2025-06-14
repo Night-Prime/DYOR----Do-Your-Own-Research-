@@ -27,7 +27,7 @@ const AnimatedTab: React.FC<AnimatedTabSwitchProps> = ({
     };
 
     return (
-        <div className="w-full bg-gray-200 max-w-xl mx-auto p-4 rounded-3xl my-2">
+        <div className="w-full bg-gray-200 max-w-xl mx-auto p-4 rounded-3xl mb-2">
             <div className='rounded-3xl shadow-sm relative'>
                 <div
                     className='absolute h-full w-1/2 bg-lime-950 rounded-3xl shadow-sm transition-transform duration-300 ease-in-out'

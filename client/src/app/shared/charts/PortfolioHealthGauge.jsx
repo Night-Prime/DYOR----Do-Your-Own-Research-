@@ -8,7 +8,7 @@ const data = [
   { name: 'Bullish', value: 40, color: '#006400' }, // Softer green
 ];
 
-const PortfolioHealthGauge = () => {
+const PortfolioHealthGauge = ({score}) => {
   const width = 250;
   const height = 180;
   
@@ -21,7 +21,7 @@ const PortfolioHealthGauge = () => {
   const oR = 100;
   
   // Needle value (position)
-  const value = 50;
+  const value = score;
   const total = data.reduce((sum, entry) => sum + entry.value, 0);
   
   // Custom shape to create rounded edges on pie segments

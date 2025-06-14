@@ -10,7 +10,7 @@ export default function DashboardLayout({
     return (
         <AuthProvider>
             <section className="w-screen h-screen overflow-hidden bg-white">
-                <main className="w-full h-full flex-grow grid grid-cols-[0.125fr_2fr] text-lime-800 p-2 gap-2">
+                <main className="w-full h-full flex-grow grid grid-cols-[0.1fr_2fr] text-lime-800 p-2 gap-2">
                     <div className="bg-gray-200 rounded-3xl">
                         <Sidebar />
                     </div>

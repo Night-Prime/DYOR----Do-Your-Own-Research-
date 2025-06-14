@@ -16,7 +16,7 @@ const Sidebar = () => {
         <div className='w-full h-full'>
             <main className='py-6 h-full w-full flex flex-col justify-between items-center'>
                 <div className='block cursor-pointer'>
-                    <h3 className='text-lg text-lime-800 font-extrabold'>
+                    <h3 className='text-sm text-lime-800 font-extrabold'>
                         DYOR
                     </h3>
                     <div className='w-full h-1 bg-lime-800 rounded-3xl'></div>

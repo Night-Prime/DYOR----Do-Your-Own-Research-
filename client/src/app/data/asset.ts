@@ -90,3 +90,30 @@ export const crypto = [
   { symbol: "AXS", name: "Axie Infinity" },
   { symbol: "EOS", name: "EOS" },
 ];
+
+export const recommended = [
+  {
+    type: "stock",
+    symbol: "NVDA",
+  },
+  {
+    type: "stock",
+    symbol: "TSLA",
+  },
+  {
+    type: "stock",
+    symbol: "MSFT",
+  },
+  {
+    type: "crypto",
+    symbol: "BTC",
+  },
+  {
+    type: "crypto",
+    symbol: "ETH",
+  },
+  {
+    type: "crypto",
+    symbol: "SOL",
+  },
+];

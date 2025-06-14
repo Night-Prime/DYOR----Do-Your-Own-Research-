@@ -1,30 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const NegativeAreaChart = () => {
-    // Modified data to ensure all values are negative
-    const data = [
-        {
-            name: 'EGLD',
-            value: -1200,
-        },
-        {
-            name: 'USD',
-            value: -2000,
-        },
-        {
-            name: 'BOLX',
-            value: -3500,
-        },
-        {
-            name: 'NVDA',
-            value: -1800,
-        },
-        {
-            name: 'ECX',
-            value: -4200,
-        },
-    ];
+const NegativeAreaChart = ({tickers}) => {
+    const top5 = useMemo(() => {
+        const sorted = tickers
+            .slice()
+            .sort(
+                (a, b) =>
+                    parseFloat(a.change_percentage.replace('%', '')) -
+                    parseFloat(b.change_percentage.replace('%', ''))
+            )
+            .slice(0, 5)
+            .reverse() // Optional: reverse to show from 5 to 1
+            .map((ticker) => ({
+                name: ticker.ticker,
+                value: parseFloat(ticker.change_percentage.replace('%', '')),
+                amount: parseFloat(ticker.price),
+            }));
+            
+    
+        return sorted;
+    }, [tickers]);
+    
 
     // Custom tooltip formatter
     const renderTooltip = ({ active, payload, label }) => {
@@ -33,7 +30,7 @@ const NegativeAreaChart = () => {
                 <div className="bg-white p-2 border border-gray-200 rounded shadow-sm">
                     <p className="font-medium text-gray-800">{label}</p>
                     <p className="text-red-600">
-                        Value: {payload[0].value}
+                        {payload[0].value.toFixed(2)}%
                     </p>
                 </div>
             );
@@ -45,7 +42,7 @@ const NegativeAreaChart = () => {
         <div className="w-full h-80 p-4 bg-white rounded-lg shadow-sm">
             <ResponsiveContainer width="100%" height="90%">
                 <AreaChart
-                    data={data}
+                    data={top5}
                     margin={{
                         top: 10,
                         right: 30,

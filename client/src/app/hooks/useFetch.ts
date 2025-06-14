@@ -53,6 +53,7 @@ export const useFetch = <T = unknown>(
             setStatusText(response.statusText);
             setData(response.data);
             setError(null);
+            localStorage.setItem(url, JSON.stringify(response.data)); // temporary till i can afford premium subscription
             
             cache.current.set(cacheKey, { 
                 data: response.data, 
@@ -66,7 +67,6 @@ export const useFetch = <T = unknown>(
                 await new Promise(res => setTimeout(res, delay));
                 return getData(currentRetry + 1);
             }
-
             const err = error as AxiosError | Error;
             setError(err);
             setStatus(axios.isAxiosError(err) ? err.response?.status || null : null);
@@ -75,7 +75,7 @@ export const useFetch = <T = unknown>(
                 setLoading(false);
             }
         }
-    }, []);
+    }, [config, params, retries, serviceURL, url]);
 
     const refresh = () => {
         const cacheKey = `${serviceURL}-${JSON.stringify(params)}`;

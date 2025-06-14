@@ -36,6 +36,7 @@ export interface ApiResponse<T> {
 export interface Asset {
     name: string;
     symbol: string;
+    type ?: string;
 }
 
 export interface AssetPayload {

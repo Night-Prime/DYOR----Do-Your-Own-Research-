@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import React, { useEffect } from 'react'
@@ -6,23 +7,24 @@ import Preloader from '../shared/Preloader';
 import { DyorAlert } from '../shared/Alert';
 import Welcome from './Welcome';
 import { User } from '../data/models';
-import AnimatedTab from './AnimatedTab';
 import InsightFeed from './InsightFeed';
-import { insightSample } from '../data/Investment';
-import PortfolioHealthGauge from '../shared/charts/PortfolioHealthGauge';
-import VerticalBarChart from '../shared/charts/VerticalBarChart';
-import RiskRadarChart from '../shared/charts/RadarChart';
-import NegativeAreaChart from '../shared/charts/NegativeCharts';
-import TopPerformingChart from '../shared/charts/TopPerformingChart';
 import { useAppDispatch, useAppSelector } from '../hooks/hook';
 import { setPortfolio } from '../core/portfolioSlice';
+import ChartContainer from '../container/ChartContainer';
 
 const Feed = () => {
   const dispatch = useAppDispatch();
   const userDetails = useAppSelector((state) => state.auth.user);
-  const { data, loading, error, refresh } = useFetch<User>("user/portfolio", { 
-    id: userDetails?.id 
+
+  const { data, loading, error, refresh } = useFetch<User>("user/portfolio", {
+    id: userDetails?.id
   });
+  
+  // const {data: score} = useFetch<any>("user/sentiment-score");
+  // const {data: news, loading: newsLoading, error:newsError} = useFetch<any>("user/news");
+  // const {data:ticker} = useFetch<any>("user/top-gainers-losers");
+
+  const news = JSON.parse(localStorage.getItem('news') || '[]');
 
   // Dispatch portfolio data only when it's available
   useEffect(() => {
@@ -45,21 +47,32 @@ const Feed = () => {
       {data && emptyPortfolio ? (
         <Welcome user={data} refresh={refresh} />
       ) : (
-        <div className='w-full h-full grid grid-cols-2 rounded-3xl overflow-y-hidden'>
-          <div className='w-full h-full flex flex-col items-center justify-start'>
-            <main className='max-h-[90dvh] overflow-y-scroll scroll-smooth pb-6'>
-              {insightSample.map((feed, key) => (
-                <span key={key}>
-                  <InsightFeed title={feed.news} news={feed.insight} />
-                </span>
-              ))}
+        <div className='w-full h-full grid grid-cols-[2fr_1fr] rounded-3xl overflow-hidden p-2'>
+          <div className='w-full h-full flex flex-col'>
+            <main className='flex-1 max-h-[88dvh] overflow-y-auto scroll-smooth p-4'>
+              {news?.length ? (
+                news.map((feed: any, index: number) => (
+                  <span key={feed.id || index}>
+                    <InsightFeed
+                      title={feed.title || 'No title available'}
+                      summary={feed.summary || 'No summary available'}
+                      url={feed.url || '#'}
+                      time={feed.time_published || ''}
+                      imgLink={feed.banner_image || ''}
+                    />
+                  </span>
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500">No news articles available at this time</p>
+                </div>
+              )}
             </main>
           </div>
-          <div className='w-full h-full max-h-max'>
-            <div className=' w-full max-h-[90dvh] flex flex-col justify-start items-center gap-4 overflow-y-scroll scroll-smooth pb-8'>
-            <AnimatedTab tab1Label='Market Sentiments' chartComponent1={<PortfolioHealthGauge />} tab2Label='Top 5 Performers' chartComponent2={<TopPerformingChart />}/>
-            <AnimatedTab tab1Label='Risk Radar' chartComponent1={<RiskRadarChart/>} tab2Label='Worst 5 Performers' chartComponent2={<NegativeAreaChart />} />
-            <AnimatedTab tab1Label='Portfolio Health' chartComponent1={<PortfolioHealthGauge />} tab2Label='Recommendations' chartComponent2={<VerticalBarChart />}  />
+
+          <div className='w-full h-full flex flex-col'>
+            <div className='flex-1 max-h-[88dvh] overflow-y-auto scroll-smooth p-4'>
+              <ChartContainer />
             </div>
           </div>
         </div>

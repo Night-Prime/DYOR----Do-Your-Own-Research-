@@ -4,14 +4,11 @@ const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
   images: {
-    domains: ['ik.imagekit.io'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'ik.imagekit.io',
-        port: '',
-        pathname: '/**/*',
-        search: '',
+        hostname: '**',
+        pathname: '/**',
       },
     ],
   }

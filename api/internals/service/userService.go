@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"os"
+	"encoding/json"
 
 	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
@@ -150,4 +152,28 @@ func UpdateUserPortfolio(req *models.PortfolioUpdateRequest) (*models.Portfolio,
     }
 
     return &updatedPortfolio, nil
+}
+
+func GetJSONFile(filePath string) (map[string]interface{}, error) {
+	fmt.Println("Grabbing the JSON Data")
+    fmt.Println("----------------------------------------------------------")
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, &errors.DatabaseError{
+			Message: "Unable to load data",
+			Err: err,
+		}
+	}
+
+	// parsing occurs:
+	var data map[string]interface{}
+	if err := json.Unmarshal(fileContent, &data); err != nil {
+		return nil, &errors.DatabaseError{
+			Message: "Unable to parse data",
+			Err: err,
+		}
+	}
+
+	return data, nil
 }

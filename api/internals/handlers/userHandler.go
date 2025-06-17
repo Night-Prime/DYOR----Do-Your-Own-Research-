@@ -298,3 +298,29 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(map[string]string{"message": "Successfully logged out"})
 }
+
+func GetJSONFileHandler(w http.ResponseWriter, r *http.Request) {
+    file := r.URL.Query().Get("file")
+    var filePath string
+    if file == "assets" {
+        filePath ="resources/asset.json"
+    } else if file == "recommended" {
+        filePath ="resources/recommended.json"
+    }
+
+    data, err := service.GetJSONFile(filePath)
+    if err != nil {
+        switch err.(type) {
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+        default:
+            http.Error(w, "Internal server error", http.StatusInternalServerError)
+        }
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+	}
+}

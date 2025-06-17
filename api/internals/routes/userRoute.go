@@ -26,6 +26,7 @@ func UserRouteHandler() http.Handler {
 		r.Get("/news", newsHandlers.GetNewsHandler)
 		r.Get("/sentiment-score", newsHandlers.CalculateNewsSentimentHandler)
 		r.Get("/top-gainers-losers", newsHandlers.GetTopGainersLosersHandler)
+		r.Get("/assets-file", handlers.GetJSONFileHandler)
 	})
 
 	router.Post("/signup", handlers.SignupHandler)

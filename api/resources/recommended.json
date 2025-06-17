@@ -1,0 +1,4 @@
+{
+    "stock_symbols": ["MSFT", "TSLA", "NVDA"],
+    "crypto_symbols": ["BTC", "SOL", "ETH"]
+}

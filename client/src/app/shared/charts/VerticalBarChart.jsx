@@ -10,34 +10,12 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-const data = [
-  {
-    name: 'GOLD',
-    price: 800,
-  },
-  {
-    name: 'BTC',
-    price: 967,
-  },
-  {
-    name: 'AAPL',
-    price: 1098,
-  },
-  {
-    name: 'TSLA',
-    price: 1200,
-  },
-  {
-    name: 'ETH',
-    price: 1108,
-  },
-  {
-    name: 'SILVER',
-    price: 680,
-  },
-];
 
-const VerticalBarChart = () => {
+const VerticalBarChart = ({recommended}) => {
+  const data = recommended.map((asset) => ({
+    name: asset.name,
+    price: Number(asset.amount)
+  })) || [];
   return (
     <div className="bg-gray-100 rounded-3xl w-full h-80 p-2">
       <ResponsiveContainer width="100%" height="100%">

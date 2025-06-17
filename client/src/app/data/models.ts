@@ -44,3 +44,9 @@ export interface AssetPayload {
     symbols: Asset[];
     portfolioID: string;
 }
+
+export interface AssetResponse {
+    name: string;
+    symbol: string;
+    amount: number | string;
+}

@@ -91,29 +91,7 @@ export const crypto = [
   { symbol: "EOS", name: "EOS" },
 ];
 
-export const recommended = [
-  {
-    type: "stock",
-    symbol: "NVDA",
-  },
-  {
-    type: "stock",
-    symbol: "TSLA",
-  },
-  {
-    type: "stock",
-    symbol: "MSFT",
-  },
-  {
-    type: "crypto",
-    symbol: "BTC",
-  },
-  {
-    type: "crypto",
-    symbol: "ETH",
-  },
-  {
-    type: "crypto",
-    symbol: "SOL",
-  },
-];
+export const recommended = {
+  stock_symbols : ["MSFT","TSLA", "NVDA"],
+  crypto_symbols: ["BTC", "SOL", "ETH"]
+}

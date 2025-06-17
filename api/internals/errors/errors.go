@@ -9,6 +9,7 @@ type ValidationError struct {
 }
 
 func (e *ValidationError) Error() string {
+    fmt.Sprintf("Error: %v", e.Message)
 	return e.Message
 }
 

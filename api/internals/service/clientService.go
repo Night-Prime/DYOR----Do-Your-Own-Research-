@@ -86,7 +86,7 @@ func (c *stockClientImpl) GetStockData(symbol string) ([]models.StockData, error
 
     if len(apiResponse.Data.QuoteResponse.Result) == 0 {
         return nil, &errors.ValidationError{
-            Message: "Decoding Error",
+            Message: "Empty Response",
         }
     }
     return apiResponse.Data.QuoteResponse.Result, nil
@@ -124,7 +124,7 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) ([]models.CryptoData
         }
     }
 
-    // adding the queries
+    // adding the queries (what's going on here ?)
     q := req.URL.Query()
     for key, value := range queryParams {
         if key == "symbol" {

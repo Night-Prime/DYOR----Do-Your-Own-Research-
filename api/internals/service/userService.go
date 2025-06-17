@@ -12,11 +12,11 @@ import (
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
+// TODO Social Login & Password Recovery feature
 func Signup(user *models.User) (*models.User, error) {
 	fmt.Println("Creating a new user in the User Service Layer")
 	fmt.Println("--------------------------------------------- \n")
 
-	// Encrypt the password before saving the user
 	hashedPassword, err := middleware.HashPassword(user.Password)
 	if err != nil {
         return nil, &errors.DatabaseError{
@@ -42,19 +42,16 @@ func Login(w http.ResponseWriter, user *models.User) (*models.User, error) {
 	fmt.Println("--------------------------------------------- \n")
 	email := *user.Email
 
-	// Retrieve the user from the database
 	storedUser, err := models.GetUserByEmail(email)
 	if err != nil {
 		fmt.Printf("Error while saving User: %v", err)
 		return nil, err
 	}
 
-	// Compare the provided password with the stored hashed password
 	if !middleware.CheckPasswordHash(user.Password, storedUser.Password) {
 		return nil, &errors.ValidationError{Message:"Invalid password"}
 	}
 
-	// Create a token for the user
 	tokenString, err := middleware.CreateToken(*user.Email)
 	if err != nil {
 		return nil,  &errors.DatabaseError{
@@ -115,7 +112,6 @@ func VerifyUserAuth(cookie string) (*models.User, error) {
 		return nil, err
 	}
 
-	// also need to check if that particular exists in the DB
 	user, err := models.GetUserByEmail(email)
 	if err != nil {
 		return nil, err
@@ -124,32 +120,16 @@ func VerifyUserAuth(cookie string) (*models.User, error) {
 	return user, nil
 }
 
-type PortfolioUpdateRequest struct {
-    Portfolio      *models.Portfolio
-    AssetsToAdd    []*models.Asset
-    AssetsToUpdate []*models.Asset
-    AssetsToDelete []uuid.UUID
-}
 
-func UpdateUserPortfolio(req *PortfolioUpdateRequest) (*models.Portfolio, error) {
+func UpdateUserPortfolio(req *models.PortfolioUpdateRequest) (*models.Portfolio, error) {
     fmt.Println("Updating portfolio and assets in the Portfolio Service Layer")
     fmt.Println("----------------------------------------------------------")
 
     if req.Portfolio.ID == uuid.Nil {
         return nil, &errors.ValidationError{Message: "Portfolio ID is required"}
     }
+	// TODO : Optimize Query & refactor
 
-    // Verify the portfolio belongs to the user
-    var existingPortfolio models.Portfolio
-    if err := database.GetDB().Where("id = ? AND user_id = ?", 
-        req.Portfolio.ID, req.Portfolio.UserID).First(&existingPortfolio).Error; err != nil {
-        return nil, &errors.DatabaseError{
-            Message: "Portfolio not found or doesn't belong to user", 
-            Err: err,
-        }
-    }
-
-    // Process asset updates
     if err := models.UpdatePortfolio(
         req.Portfolio,
         req.AssetsToAdd,
@@ -159,7 +139,7 @@ func UpdateUserPortfolio(req *PortfolioUpdateRequest) (*models.Portfolio, error)
         return nil, err
     }
 
-    // Fetch the updated portfolio with assets
+    // Refetching the updated portfolio (logic is debatable)
     var updatedPortfolio models.Portfolio
     if err := database.GetDB().Preload("Assets").
         First(&updatedPortfolio, "id = ?", req.Portfolio.ID).Error; err != nil {

@@ -15,6 +15,7 @@ import (
 
 func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
     // Define request struct to match your payload
+    // TODO : move them to a reusable model
 	type AssetSymbol struct {
         Symbol string `json:"symbol"`
         Name   string `json:"name"`
@@ -37,7 +38,6 @@ func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	// Convert to symbol map (symbol -> name)
     symbolMap := make(map[string]string)
     for _, symbol := range request.Symbols {
         if symbol.Symbol == "" {
@@ -47,7 +47,7 @@ func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
         symbolMap[symbol.Symbol] = symbol.Name
     }
 
-    // Validate asset type (come back to this)
+    // TODO Validate asset type (come back to this)
     assetType := models.AssetType(request.Type)
     if assetType != models.AssetTypeStock && assetType != models.AssetTypeCrypto {
         http.Error(w, "Invalid asset type", http.StatusBadRequest)
@@ -112,7 +112,7 @@ func NewAssetHandler(assetService *service.AssetService) *AssetHandler {
 
 func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
     query := r.URL.Query()
-    
+    // TODO move to a reusable model
     response := struct {
         Stocks []*models.Asset `json:"stocks,omitempty"`
         Crypto []*models.Asset `json:"crypto,omitempty"`

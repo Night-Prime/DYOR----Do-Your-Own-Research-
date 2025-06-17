@@ -15,7 +15,7 @@ type User struct {
 	LastName   string      `gorm:"type:varchar(100);not null" json:"last_name"`
 	Avatar     *string     `gorm:"type:varchar(255)" json:"avatar"`
 	Email      *string     `gorm:"type:varchar(100);unique" json:"email"`
-	Role     string      `gorm:"type:varchar(50);default:'user'" json:"role"`
+	Role       string      `gorm:"type:varchar(50);default:'user'" json:"role"`
 	Password   string      `gorm:"type:varchar(255);not null" json:"password"`
 	CreatedAt  time.Time   `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time   `gorm:"autoUpdateTime" json:"updated_at"`
@@ -40,7 +40,7 @@ func AutoMigrate() error {
     
     return nil
 }
-
+// TODO: Optimize DB Query & Perform Migrations
 func Validate (u *User) error {
 	if u.FirstName == "" {
 		return &errors.ValidationError{Message: "First name is required"}

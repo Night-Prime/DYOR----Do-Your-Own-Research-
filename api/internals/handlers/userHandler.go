@@ -78,7 +78,6 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdUser)
 }
 
-// auth_handlers.go
 func VerifyUser(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("token")
     if err != nil {
@@ -175,7 +174,9 @@ func GetPortfolioForUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+// this code is weird.
 func UpdatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
+    // TODO : Convert to reusable Model
     var request struct {
         Portfolio struct {
             ID              uuid.UUID  `json:"id"`
@@ -222,7 +223,6 @@ func UpdatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
         AssetPreference: pq.StringArray(request.Portfolio.AssetPreference),
     }
 
-    // Prepare assets to add
     var assetsToAdd []*models.Asset
     for _, asset := range request.Assets.Add {
         assetType := models.AssetType(asset.Type)
@@ -243,7 +243,6 @@ func UpdatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
         })
     }
 
-    // Prepare assets to update
     var assetsToUpdate []*models.Asset
     for _, asset := range request.Assets.Update {
         assetsToUpdate = append(assetsToUpdate, &models.Asset{
@@ -258,8 +257,7 @@ func UpdatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
         })
     }
 
-    // Create update request
-    updateReq := &service.PortfolioUpdateRequest{
+    updateReq := &models.PortfolioUpdateRequest{
         Portfolio:      portfolio,
         AssetsToAdd:    assetsToAdd,
         AssetsToUpdate: assetsToUpdate,

@@ -13,7 +13,6 @@ type AssetType string
 
 const (
 	AssetTypeStock  AssetType = "stock"
-	// AssetTypeBond   AssetType = "bond"
 	AssetTypeCrypto AssetType = "crypto"
 )
 
@@ -44,27 +43,27 @@ type AssetBase struct {
 }
 
 type CryptoData struct {
-        Key                string `json:"key"`
-        ID                 int    `json:"id"`
-        Name               string `json:"name"`
-        Symbol             string `json:"symbol"`
-        Decimals           int    `json:"decimals"`
-        Logo               string `json:"logo"`
-        Rank               int    `json:"rank"`
-        Price              float64 `json:"price"`
-        MarketCap          float64 `json:"market_cap"`
-        MarketCapDiluted   float64 `json:"market_cap_diluted"`
-        Volume             float64 `json:"volume"`
-        VolumeChange24H    float64 `json:"volume_change_24h"`
-        Volume7D           float64 `json:"volume_7d"`
-        Liquidity          float64 `json:"liquidity"`
-        ATH                float64 `json:"ath"`
-        ATL                float64 `json:"atl"`
-        PriceChange1H      float64 `json:"price_change_1h"`
-        PriceChange24H     float64 `json:"price_change_24h"`
-        PriceChange7D      float64 `json:"price_change_7d"`
-        PriceChange1M      float64 `json:"price_change_1m"`
-        PriceChange1Y      float64 `json:"price_change_1y"`
+    Key                string `json:"key"`
+    ID                 int    `json:"id"`
+    Name               string `json:"name"`
+    Symbol             string `json:"symbol"`
+    Decimals           int    `json:"decimals"`
+    Logo               string `json:"logo"`
+    Rank               int    `json:"rank"`
+    Price              float64 `json:"price"`
+    MarketCap          float64 `json:"market_cap"`
+    MarketCapDiluted   float64 `json:"market_cap_diluted"`
+    Volume             float64 `json:"volume"`
+    VolumeChange24H    float64 `json:"volume_change_24h"`
+    Volume7D           float64 `json:"volume_7d"`
+    Liquidity          float64 `json:"liquidity"`
+    ATH                float64 `json:"ath"`
+    ATL                float64 `json:"atl"`
+    PriceChange1H      float64 `json:"price_change_1h"`
+    PriceChange24H     float64 `json:"price_change_24h"`
+    PriceChange7D      float64 `json:"price_change_7d"`
+    PriceChange1M      float64 `json:"price_change_1m"`
+    PriceChange1Y      float64 `json:"price_change_1y"`
 }
 
 type StockData struct {
@@ -87,18 +86,11 @@ type StockData struct {
         Raw float64 `json:"raw"`
     } `json:"regularMarketChange"`
 }
-// type BondData struct {
-//     YieldToMaturity   float64 `json:"yield_to_maturity"`
-//     MaturityDate      string  `json:"maturity_date"`
-//     CouponRate        float64 `json:"coupon_rate"`
-//     CreditRating      string  `json:"credit_rating"`
-// }
 
 type Asset struct {
     AssetBase
     CryptoData *CryptoData `json:"crypto_data,omitempty" gorm:"type:jsonb"`
     StockData  *StockData  `json:"stock_data,omitempty" gorm:"type:jsonb"`
-    // BondData   *BondData   `json:"bond_data,omitempty" gorm:"type:jsonb"`
 }
 
 func (a *Asset) Validate() error {
@@ -111,10 +103,6 @@ func (a *Asset) Validate() error {
         if a.StockData == nil {
             return &errors.ValidationError{Message:"StockData is required for Stock assets"}
         }
-    // case AssetTypeBond:
-    //     if a.BondData == nil {
-    //         return errors.New("bond_data is required for bond assets")
-    //     }
     default:
         return &errors.ValidationError{Message:"Invalid Asset type"}
     }
@@ -127,7 +115,7 @@ func SaveAssetToDB(assets []*Asset) error {
     if len(assets) == 0 {
         return &errors.ValidationError{Message:"No assets provided"}
     }
-
+    // TODO : The idea of Multi-Portfolio in the near future
     portfolioID := assets[0].PortfolioID
     var portfolio Portfolio
 

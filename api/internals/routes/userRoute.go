@@ -10,6 +10,7 @@ import (
 )
 
 func UserRouteHandler() http.Handler {
+	// TODO this plug-play approach needs more research
 	newsClient := service.NewsClient()
 	newsService := service.NewNewsService(newsClient)
 	newsHandlers := handlers.NewNewsHandler(newsService)

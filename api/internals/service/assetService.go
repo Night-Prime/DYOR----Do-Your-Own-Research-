@@ -11,7 +11,7 @@ import (
 // Note: didn't use DI on parts of the code not interacting with external services
 
 func CreateAsset(assetType models.AssetType, symbolMap map[string]string, portfolioID uuid.UUID) ([]*models.Asset, error) {
-    fmt.Println("Creating multiple assets in the Asset Service Layer")
+    fmt.Println("Creating assets in the Asset Service Layer")
     fmt.Println("---------------------------------------------\n")
 
     var assets []*models.Asset
@@ -78,14 +78,12 @@ func DeleteAsset(assetID string) error {
 type AssetService struct {
 	stockAPIClient StockAPIClient
 	cryptoAPIClient CryptoAPIClient
-	// bondAPIClient BondAPIClient
 }
 
 func NewAssetService(stockAPIClient StockAPIClient, cryptoAPIClient CryptoAPIClient) *AssetService {
 	return &AssetService{
 		stockAPIClient: stockAPIClient,
 		cryptoAPIClient: cryptoAPIClient,
-		// bondAPIClient: bondAPIClient,
 	}
 }
 
@@ -102,7 +100,7 @@ func (s *AssetService) GetAssets(assetType models.AssetType, symbols ...string) 
 
 func (s *AssetService) fetchStocks(symbols []string) ([]*models.Asset, error) {
     var assets []*models.Asset
-    
+    // TODO : Introduce concurrency approach to handle multi-request
     for _, symbol := range symbols {
         stockDataList, err := s.stockAPIClient.GetStockData(symbol)
         if err != nil {

@@ -10,6 +10,13 @@ import (
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
+type PortfolioUpdateRequest struct {
+    Portfolio        *Portfolio
+    AssetsToAdd    []*Asset
+    AssetsToUpdate []*Asset
+    AssetsToDelete []uuid.UUID
+}
+
 type Portfolio struct {
 	ID              uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	UserID          uuid.UUID `gorm:"type:uuid;not null" json:"user_id"`
@@ -22,7 +29,7 @@ type Portfolio struct {
 	DeletedAt       *time.Time `gorm:"index" json:"deleted_at"`
 	Assets          []Asset   `gorm:"foreignKey:PortfolioID" json:"assets,omitempty"`
 }
-
+// TODO: Optimize Queries & Migration Scripts
 func SavePortfolioToDB(p *Portfolio) error {
 	p.ID = uuid.New()
 	p.CreatedAt = time.Now()
@@ -33,7 +40,7 @@ func SavePortfolioToDB(p *Portfolio) error {
 
 	var existingPortfolio Portfolio
 	if err := db.Where("user_id = ? ", p.UserID).First(&existingPortfolio).Error; err == nil {
-		return &errors.DatabaseError{ Message:"Portfolio with already exists for User", Err: err}
+		return &errors.DatabaseError{ Message:"Portfolio with already exists for this user", Err: err}
 	}
 
 	if err := db.Create(p).Error; err != nil {
@@ -63,7 +70,12 @@ func DeletePortfolio(portfolioID string) error {
 }
 
 
-func UpdatePortfolio(p *Portfolio, assetsToAdd []*Asset, assetsToUpdate []*Asset, assetsToDelete []uuid.UUID) error {
+func UpdatePortfolio(
+    p *Portfolio, 
+    assetsToAdd []*Asset, 
+    assetsToUpdate []*Asset, 
+    assetsToDelete []uuid.UUID,
+    ) error {
     db := database.GetDB()
     p.UpdatedAt = time.Now()
 
@@ -140,7 +152,6 @@ func UpdatePortfolio(p *Portfolio, assetsToAdd []*Asset, assetsToUpdate []*Asset
         }
     }
 
-    // Handle new asset creations using your existing logic
     if len(assetsToAdd) > 0 {
         // Prepare assets
         var symbols []string

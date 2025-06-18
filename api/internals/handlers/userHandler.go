@@ -176,36 +176,7 @@ func GetPortfolioForUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // this code is weird.
 func UpdatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
-    // TODO : Convert to reusable Model
-    var request struct {
-        Portfolio struct {
-            ID              uuid.UUID  `json:"id"`
-            Name            string     `json:"name"`
-			UserID          uuid.UUID  `json:"user_id"`
-            TotalValue      float64    `json:"total_value,omitempty"`
-            InvestmentGoals []string   `json:"investment_goals,omitempty"`
-            AssetPreference []string   `json:"asset_preference,omitempty"`
-        } `json:"portfolio"`
-        Assets struct {
-            Add    []struct {
-                Symbol       string    `json:"symbol"`
-                Name         string    `json:"name"`
-                Type         string    `json:"type"`
-                Quantity     float64   `json:"quantity,omitempty"`
-                CurrentPrice float64   `json:"current_price,omitempty"`
-                Volume       float64   `json:"volume,omitempty"`
-            } `json:"add"`
-            Update []struct {
-                ID           uuid.UUID `json:"id"`
-                Symbol       string    `json:"symbol"`
-                Name         string    `json:"name"`
-                Quantity     float64   `json:"quantity,omitempty"`
-                CurrentPrice float64   `json:"current_price,omitempty"`
-                Volume       float64   `json:"volume,omitempty"`
-            } `json:"update"`
-            Delete []uuid.UUID `json:"delete"`
-        } `json:"assets"`
-    }
+    var request models.PortfolioRequest
 
     if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
         fmt.Printf("JSON decode error: %v", err) 
@@ -257,7 +228,7 @@ func UpdatePortfolioHandler(w http.ResponseWriter, r *http.Request) {
         })
     }
 
-    updateReq := &models.PortfolioUpdateRequest{
+    updateReq := &models.PortfolioUpdateResponse{
         Portfolio:      portfolio,
         AssetsToAdd:    assetsToAdd,
         AssetsToUpdate: assetsToUpdate,

@@ -40,7 +40,7 @@ func AutoMigrate() error {
     
     return nil
 }
-// TODO: Optimize DB Query & Perform Migrations
+
 func Validate (u *User) error {
 	if u.FirstName == "" {
 		return &errors.ValidationError{Message: "First name is required"}

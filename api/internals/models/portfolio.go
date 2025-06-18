@@ -10,13 +10,45 @@ import (
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/database"
 )
 
-type PortfolioUpdateRequest struct {
+
+type PortfolioRequest struct {
+    Portfolio struct {
+        ID              uuid.UUID  `json:"id"`
+        Name            string     `json:"name"`
+        UserID          uuid.UUID  `json:"user_id"`
+        TotalValue      float64    `json:"total_value,omitempty"`
+        InvestmentGoals []string   `json:"investment_goals,omitempty"`
+        AssetPreference []string   `json:"asset_preference,omitempty"`
+    } `json:"portfolio"`
+    Assets struct {
+        Add    []struct {
+            Symbol       string    `json:"symbol"`
+            Name         string    `json:"name"`
+            Type         string    `json:"type"`
+            Quantity     float64   `json:"quantity,omitempty"`
+            CurrentPrice float64   `json:"current_price,omitempty"`
+            Volume       float64   `json:"volume,omitempty"`
+        } `json:"add"`
+        Update []struct {
+            ID           uuid.UUID `json:"id"`
+            Symbol       string    `json:"symbol"`
+            Name         string    `json:"name"`
+            Quantity     float64   `json:"quantity,omitempty"`
+            CurrentPrice float64   `json:"current_price,omitempty"`
+            Volume       float64   `json:"volume,omitempty"`
+        } `json:"update"`
+        Delete []uuid.UUID `json:"delete"`
+    } `json:"assets"`
+}
+
+type PortfolioUpdateResponse struct {
     Portfolio        *Portfolio
     AssetsToAdd    []*Asset
     AssetsToUpdate []*Asset
     AssetsToDelete []uuid.UUID
 }
 
+// The model that gets sent to the DB
 type Portfolio struct {
 	ID              uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	UserID          uuid.UUID `gorm:"type:uuid;not null" json:"user_id"`
@@ -29,7 +61,6 @@ type Portfolio struct {
 	DeletedAt       *time.Time `gorm:"index" json:"deleted_at"`
 	Assets          []Asset   `gorm:"foreignKey:PortfolioID" json:"assets,omitempty"`
 }
-// TODO: Optimize Queries & Migration Scripts
 func SavePortfolioToDB(p *Portfolio) error {
 	p.ID = uuid.New()
 	p.CreatedAt = time.Now()

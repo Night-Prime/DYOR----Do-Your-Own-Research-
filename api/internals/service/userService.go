@@ -123,14 +123,13 @@ func VerifyUserAuth(cookie string) (*models.User, error) {
 }
 
 
-func UpdateUserPortfolio(req *models.PortfolioUpdateRequest) (*models.Portfolio, error) {
+func UpdateUserPortfolio(req *models.PortfolioUpdateResponse) (*models.Portfolio, error) {
     fmt.Println("Updating portfolio and assets in the Portfolio Service Layer")
     fmt.Println("----------------------------------------------------------")
 
     if req.Portfolio.ID == uuid.Nil {
         return nil, &errors.ValidationError{Message: "Portfolio ID is required"}
     }
-	// TODO : Optimize Query & refactor
 
     if err := models.UpdatePortfolio(
         req.Portfolio,

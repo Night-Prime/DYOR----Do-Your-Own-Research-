@@ -16,19 +16,25 @@ const (
 	AssetTypeCrypto AssetType = "crypto"
 )
 
-type StockAPIResponse struct {
-    Data struct {
-        QuoteResponse struct {
-            Result []StockData `json:"result"`
-        } `json:"quoteResponse"`
-    } `json:"data"`
+type AssetSymbol struct {
+    Symbol string `json:"symbol"`
+    Name   string `json:"name"`
 }
 
-type CryptoAPIResponse struct{
-    Data      map[string]interface{} `json:"data"`
-    DataArray []CryptoData `json:dataArray`
+type AssetRequest struct {
+    Type        string        `json:"type"`
+    Symbols     []AssetSymbol `json:"symbols"`
+    PortfolioID uuid.UUID     `json:"portfolioID"`
 }
 
+type AssetUpdateResponse struct {
+    Stocks []*Asset `json:"stocks,omitempty"`
+    Crypto []*Asset `json:"crypto,omitempty"`
+    Errors []string        `json:"errors,omitempty"`
+}
+
+
+// The models that gets sent to the DB
 type AssetBase struct {
     ID            uuid.UUID `json:"id" gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
     PortfolioID   uuid.UUID `json:"portfolio_id" gorm:"type:uuid;not null"`
@@ -93,21 +99,21 @@ type Asset struct {
     StockData  *StockData  `json:"stock_data,omitempty" gorm:"type:jsonb"`
 }
 
-func (a *Asset) Validate() error {
-    switch a.Type {
-    case AssetTypeCrypto:
-        if a.CryptoData == nil {
-            return &errors.ValidationError{Message:"CryptoData is required for crypto assets"}
-        }
-    case AssetTypeStock:
-        if a.StockData == nil {
-            return &errors.ValidationError{Message:"StockData is required for Stock assets"}
-        }
-    default:
-        return &errors.ValidationError{Message:"Invalid Asset type"}
-    }
-    return nil
+// just for API Client Responses
+type StockAPIResponse struct {
+    Data struct {
+        QuoteResponse struct {
+            Result []StockData `json:"result"`
+        } `json:"quoteResponse"`
+    } `json:"data"`
 }
+
+type CryptoAPIResponse struct{
+    Data      map[string]interface{} `json:"data"`
+    DataArray []CryptoData `json:dataArray`
+}
+
+
 
 func SaveAssetToDB(assets []*Asset) error {
     db := database.GetDB()

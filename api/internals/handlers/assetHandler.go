@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 
-	"github.com/google/uuid"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/service"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
@@ -15,19 +14,7 @@ import (
 
 func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
     // Define request struct to match your payload
-    // TODO : move them to a reusable model
-	type AssetSymbol struct {
-        Symbol string `json:"symbol"`
-        Name   string `json:"name"`
-    }
-
-    type AssetRequest struct {
-        Type        string        `json:"type"`
-        Symbols     []AssetSymbol `json:"symbols"`
-        PortfolioID uuid.UUID     `json:"portfolioID"`
-    }
-
-    var request AssetRequest
+    var request models.AssetRequest
     if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
         http.Error(w, "Invalid request payload", http.StatusBadRequest)
         return
@@ -47,7 +34,6 @@ func CreateAssetsHandler(w http.ResponseWriter, r *http.Request) {
         symbolMap[symbol.Symbol] = symbol.Name
     }
 
-    // TODO Validate asset type (come back to this)
     assetType := models.AssetType(request.Type)
     if assetType != models.AssetTypeStock && assetType != models.AssetTypeCrypto {
         http.Error(w, "Invalid asset type", http.StatusBadRequest)
@@ -112,12 +98,11 @@ func NewAssetHandler(assetService *service.AssetService) *AssetHandler {
 
 func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
     query := r.URL.Query()
-    // TODO move to a reusable model
-    response := struct {
-        Stocks []*models.Asset `json:"stocks,omitempty"`
-        Crypto []*models.Asset `json:"crypto,omitempty"`
-        Errors []string        `json:"errors,omitempty"`
-    }{}
+    response := models.AssetUpdateResponse{
+        Stocks: nil,
+        Crypto: nil,
+        Errors: nil,
+    }
 
     if stockSymbols := query.Get("stock_symbols"); stockSymbols != "" {
         symbols := strings.Split(stockSymbols, ",")

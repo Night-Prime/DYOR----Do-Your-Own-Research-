@@ -88,11 +88,13 @@ func DeleteAssetHandler(w http.ResponseWriter, r *http.Request) {
 // ( DI happening here (i don't think it should get to this level), the intention here is to connect to an external service/ model to get insights on each assets):
 type AssetHandler struct {
 	assetService  *service.AssetService
+    aiService *service.AIService
 }
 
-func NewAssetHandler(assetService *service.AssetService) *AssetHandler {
+func NewAssetHandler(assetService *service.AssetService, aiService *service.AIService) *AssetHandler {
 	return &AssetHandler{
 		assetService: assetService,
+        aiService: aiService,
 	}
 }
 
@@ -146,4 +148,22 @@ func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
     
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(response)
+}
+
+func (h *AssetHandler) GetAIInsightsHandler(w http.ResponseWriter, r *http.Request) {
+    var req models.AIRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+    }
+    
+    summary, err := h.aiService.GetAIInsightsSummary(req.Test)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+    }
+    
+    w.Header().Set("Content-Type", "text/plain")
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(summary))
 }

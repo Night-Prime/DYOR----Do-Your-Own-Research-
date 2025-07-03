@@ -30,6 +30,7 @@ type Config struct {
 	VANTAGE_FUNCTION_TOP string
 
 	SecretKey string
+	AIEndpoint string
 }
 
 func Load() (*Config, error) {
@@ -101,6 +102,10 @@ func Load() (*Config, error) {
 	if vantageFunctionTop == "" {
 		return nil, errors.New("VANTAGE_FUNCTION_TOP not set in environment variables")
 	}
+	aiEndpoint := os.Getenv("AI_ENDPOINT")
+	if aiEndpoint == "" {
+		return nil, errors.New("AI_ENDPOINT not set in the environment variables")
+	}
 
 	cfg =  &Config{
 		Port: port,
@@ -116,6 +121,7 @@ func Load() (*Config, error) {
 		VANTAGE_KEY: vantageKey,
 		VANTAGE_FUNCTION: vantageFunction,
 		VANTAGE_FUNCTION_TOP: vantageFunctionTop,
+		AIEndpoint:aiEndpoint,
 	}
 
 	if err := database.InitializeWithRetry(cfg.ConnStr); err != nil {

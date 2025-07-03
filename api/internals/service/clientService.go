@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"io"
     "strings"
+    "bytes"
 
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
@@ -17,6 +18,7 @@ import (
 // and implements the functions to fetch data from those APIs.
 
 // (Lot of Dependency Injection happening here)
+// TODO Implement the SendRequest reusable function when refactoring
 
 // For Stock:
 type StockAPIClient interface {
@@ -296,3 +298,58 @@ func (c *newsClientImpl) GetTopGainersLosers() (*models.TickerUpdates, error) {
 
     return &apiResponse, nil
 }
+
+type AIInsightClient interface {
+    GetAssetInsight(assetInfo string) (models.FinancialAnalysisResponse, error)
+}
+
+type AIInsightClientImpl struct {}
+
+func NewAIClient() AIInsightClient {
+    return &AIInsightClientImpl{}
+}
+
+func (a *AIInsightClientImpl) GetAssetInsight(assetInfo string) (models.FinancialAnalysisResponse, error) {
+    fmt.Println("The AI insight Client Layer")
+    fmt.Println("--------------------------------------------- \n")
+
+    cfg := config.Get()
+    
+    requestBody := models.AIRequest{
+        Test: assetInfo,
+    }
+    
+    jsonBody, err := json.Marshal(requestBody)
+    if err != nil {
+        return models.FinancialAnalysisResponse{}, err
+    }
+    
+    req, err := http.NewRequest("POST", cfg.AIEndpoint, bytes.NewBuffer(jsonBody))
+    if err != nil {
+        return models.FinancialAnalysisResponse{}, err
+    }
+    
+    req.Header.Set("Content-Type", "application/json")
+    
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return models.FinancialAnalysisResponse{}, err
+    }
+    defer resp.Body.Close()
+    
+    if resp.StatusCode != http.StatusOK {
+        return models.FinancialAnalysisResponse{}, fmt.Errorf("AI service returned status: %d", resp.StatusCode)
+    }
+    
+    var analysisResponse models.FinancialAnalysisResponse
+    if err := json.NewDecoder(resp.Body).Decode(&analysisResponse); err != nil {
+        return models.FinancialAnalysisResponse{}, err
+    }
+    
+    return analysisResponse, nil
+}
+
+
+
+// I think a better design pattern could be used, this feels redundant, too much complexity
+// but then this is my first time writing a big project in Go.

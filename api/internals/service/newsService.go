@@ -24,7 +24,7 @@ func (n *NewsService) GetNews() ([]*models.News, error) {
 	news, err := n.newsAPIClient.GetNewsData()
 	if err != nil {
 		return nil, &errors.DatabaseError{
-            Message: "Error Fetching",
+            Message: "Error Fetching From the News Service",
             Err: err,
         }
 	}

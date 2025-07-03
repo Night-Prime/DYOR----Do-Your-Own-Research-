@@ -12,9 +12,11 @@ import (
 func AssetRouteHandler() http.Handler {
 	stockClient := service.NewStockClient()
 	cryptoClient := service.NewCryptoClient()
+	aiClient := service.NewAIClient()
 
 	assetService := service.NewAssetService(stockClient, cryptoClient)
-	assetHandler := handlers.NewAssetHandler(assetService)
+	aiService := service.NewAIService(aiClient)
+	assetHandler := handlers.NewAssetHandler(assetService, aiService)
 	
 
 	router := chi.NewRouter()
@@ -24,6 +26,7 @@ func AssetRouteHandler() http.Handler {
 		r.Post("/create-asset", handlers.CreateAssetsHandler)
 		r.Delete("/delete-asset", handlers.DeleteAssetHandler)
 		r.Get("/get-live-update", assetHandler.GetAssetHandler)
+		r.Get("/get-ai-summary", assetHandler.GetAIInsightsHandler)
 	})
 
 	return router

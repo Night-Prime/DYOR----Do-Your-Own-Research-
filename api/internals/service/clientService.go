@@ -314,42 +314,125 @@ func (a *AIInsightClientImpl) GetAssetInsight(assetInfo string) (models.Financia
     fmt.Println("--------------------------------------------- \n")
 
     cfg := config.Get()
+
+    prompt := fmt.Sprintf(`
+    You are an expert financial analyst and investment advisor with deep expertise in:
+    - Traditional financial markets (stocks, bonds, commodities)
+    - Cryptocurrency and digital asset markets
+    - DeFi protocols and yield farming strategies
+    - NFT market dynamics and valuation
+    - Blockchain metrics and on-chain analysis
+    - Technical analysis and chart patterns
+    - Risk assessment and portfolio management
+    - Economic indicators and market trends
+    - Sector analysis and industry dynamics
+    - Investment strategies and recommendations.
+
+    You are tasked with analyzing the following real-time asset data. The assets may be a mix of traditional stocks and cryptocurrencies. Perform a comprehensive, multi-layered financial analysis on each asset individually and then provide a portfolio-wide assessment.
+
+    Injected Real-Time Data:
+    %s
+
+    Tasks:
+    1. Market Sentiment: Overall market mood, confidence level, key drivers, and sentiment score
+    2. Technical Analysis: Trend direction, support/resistance levels, indicators (RSI, MACD, volume, moving averages, patterns, momentum)
+    3. Risk Assessment: Overall risk level, risk types (market, liquidity, volatility, regulatory, smart contract), volatility level, downside protection
+    4. Actionable Insights: Investment recommendations (buy/sell/hold), price targets (short/medium/long term), time horizon, entry/exit points, probability estimates
+    5. Crypto-Specific Analysis (If Type = Crypto): Tokenomics, on-chain metrics, DeFi/NFT metrics if applicable
+    6. Additional Analysis: Correlation between assets, macroeconomic impact, regulatory outlook, sector dynamics, innovation trends, and competitive landscape
+
+    Output Format:
+    Always respond as an Essay Write up, Multiple Major paragraphs for each asset, (Not a markdown but plain text as you need to strip away any potential '*', newlines '\n', or double new lines '\n\n' of any kind shouldn't be there).
     
-    requestBody := models.AIRequest{
-        Test: assetInfo,
+
+    Notes:
+    - Use actual numerical values from the data provided (market cap, price changes, volume, etc.)
+    - Apply contextual financial reasoning for each insight.
+    - Score each metric when appropriate, even if approximate.
+    `, assetInfo)
+
+    reqBody := models.PromptRequest{
+        Model: cfg.AI_MODEL,
+        Messages: []models.Message{
+            {
+                Role:    "system",
+                Content: prompt,
+            },
+        },
     }
-    
-    jsonBody, err := json.Marshal(requestBody)
+
+    body, err := json.Marshal(reqBody)
     if err != nil {
-        return models.FinancialAnalysisResponse{}, err
+        return models.FinancialAnalysisResponse{}, &errors.DatabaseError{
+            Message: "Error marshalling request body",
+            Err:     err,
+        }
     }
-    
-    req, err := http.NewRequest("POST", cfg.AIEndpoint, bytes.NewBuffer(jsonBody))
+
+    req, err := http.NewRequest("POST", cfg.AIEndpoint, bytes.NewBuffer(body))
     if err != nil {
-        return models.FinancialAnalysisResponse{}, err
+        return models.FinancialAnalysisResponse{}, &errors.DatabaseError{
+            Message: "Error creating request",
+            Err:     err,
+        }
     }
-    
+
     req.Header.Set("Content-Type", "application/json")
-    
-    resp, err := http.DefaultClient.Do(req)
+    req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", cfg.AIKey))
+
+    res, err := http.DefaultClient.Do(req)
     if err != nil {
-        return models.FinancialAnalysisResponse{}, err
+        return models.FinancialAnalysisResponse{}, &errors.DatabaseError{
+            Message: "Error making request",
+            Err:     err,
+        }
     }
-    defer resp.Body.Close()
-    
-    if resp.StatusCode != http.StatusOK {
-        return models.FinancialAnalysisResponse{}, fmt.Errorf("AI service returned status: %d", resp.StatusCode)
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return models.FinancialAnalysisResponse{}, fmt.Errorf("Error: %s", res.Status)
     }
-    
-    var analysisResponse models.FinancialAnalysisResponse
-    if err := json.NewDecoder(resp.Body).Decode(&analysisResponse); err != nil {
-        return models.FinancialAnalysisResponse{}, err
+
+    bodyBytes, err := io.ReadAll(res.Body)
+    if err != nil {
+        return models.FinancialAnalysisResponse{}, &errors.DatabaseError{
+            Message: "Error reading response body",
+            Err:     err,
+        }
     }
-    
-    return analysisResponse, nil
+
+
+    var aiResp models.AIResponse
+
+    if err := json.Unmarshal(bodyBytes, &aiResp); err != nil {
+        return models.FinancialAnalysisResponse{}, &errors.DatabaseError{
+            Message: "Error unmarshaling AI response",
+            Err:     err,
+        }
+    }
+
+    if len(aiResp.Choices) == 0 {
+        return models.FinancialAnalysisResponse{}, &errors.ValidationError{
+            Message: "Error unmarshaling AI response",
+        }
+    }
+
+
+    analysis := models.FinancialAnalysisResponse{
+        Sentiment: aiResp.Choices[0].Message.Content,
+    }
+
+    return analysis, nil
 }
 
 
 
 // I think a better design pattern could be used, this feels redundant, too much complexity
 // but then this is my first time writing a big project in Go.
+
+
+//TODO AI-Llama Client test
+
+// func GetAIInsightsSummary(test string) (string, error) {
+
+// }

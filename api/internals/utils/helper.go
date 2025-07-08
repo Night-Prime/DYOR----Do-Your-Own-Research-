@@ -7,6 +7,8 @@ import(
     "net/http"
     "io"
 	"encoding/json"
+    "strings"
+    "regexp"
 )
 
 func SendRequest(client *http.Client, req *http.Request, v interface{}) error {
@@ -26,4 +28,15 @@ func SendRequest(client *http.Client, req *http.Request, v interface{}) error {
     }
 
     return json.Unmarshal(bodyBytes, v)
+}
+
+func StripAllFormatting(text string) string {
+	text = regexp.MustCompile(`[#*_\-~`+"`]").ReplaceAllString(text, "")
+	text = regexp.MustCompile(`<[^>]*>`).ReplaceAllString(text, "")
+	text = regexp.MustCompile(`https?://\S+`).ReplaceAllString(text, "")
+	text = regexp.MustCompile(`\[([^\]]+)\]\([^\)]+\)`).ReplaceAllString(text, `$1`)
+	text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
+	text = regexp.MustCompile(`[^\w\s.,!?;:'"-]`).ReplaceAllString(text, "")
+	
+	return strings.TrimSpace(text)
 }

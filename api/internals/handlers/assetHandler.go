@@ -151,19 +151,18 @@ func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) GetAIInsightsHandler(w http.ResponseWriter, r *http.Request) {
-    var req models.AIRequest
+    var req models.AssetInsightsRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
         http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
     }
     
-    summary, err := h.aiService.GetAIInsightsSummary(req.Test)
+    summary, err := h.aiService.GetAIInsightsSummary(req.AssetInfo)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
     }
     
-    w.Header().Set("Content-Type", "text/plain")
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte(summary))
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(summary)
 }

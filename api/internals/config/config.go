@@ -31,6 +31,8 @@ type Config struct {
 
 	SecretKey string
 	AIEndpoint string
+	AIKey string
+	AI_MODEL string
 }
 
 func Load() (*Config, error) {
@@ -107,6 +109,15 @@ func Load() (*Config, error) {
 		return nil, errors.New("AI_ENDPOINT not set in the environment variables")
 	}
 
+	aiKey := os.Getenv("AI_KEY")
+	if aiKey == "" {
+		return nil, errors.New("AI_KEY not set in the environment variables")
+	}
+	aiModel := os.Getenv("AI_MODEL")
+	if aiModel == "" {
+		return nil, errors.New("AI_MODEL not set in the environment variables")
+	}
+
 	cfg =  &Config{
 		Port: port,
 		ConnStr: connStr,
@@ -122,6 +133,8 @@ func Load() (*Config, error) {
 		VANTAGE_FUNCTION: vantageFunction,
 		VANTAGE_FUNCTION_TOP: vantageFunctionTop,
 		AIEndpoint:aiEndpoint,
+		AIKey: aiKey,
+		AI_MODEL: aiModel,
 	}
 
 	if err := database.InitializeWithRetry(cfg.ConnStr); err != nil {

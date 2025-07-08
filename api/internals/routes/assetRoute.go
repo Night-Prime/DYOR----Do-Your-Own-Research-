@@ -26,7 +26,7 @@ func AssetRouteHandler() http.Handler {
 		r.Post("/create-asset", handlers.CreateAssetsHandler)
 		r.Delete("/delete-asset", handlers.DeleteAssetHandler)
 		r.Get("/get-live-update", assetHandler.GetAssetHandler)
-		r.Get("/get-ai-summary", assetHandler.GetAIInsightsHandler)
+		r.Post("/get-ai-summary", assetHandler.GetAIInsightsHandler)
 	})
 
 	return router

@@ -28,7 +28,7 @@ export const headerCopy = [
     {
         page: "learn",
         header: "Resources & Learning",
-        subheading: "Grow your knowledge, grow your wealth. Empowering you to D.Y.O.R.",
+        subheading: "Grow your knowledge, grow your wealth. Empowering you to Insights.",
         description: "Articles, videos, infographics, step-by-step guides, definitions, Q&A"
     },
     {

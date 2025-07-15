@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 
 // export const metadata: Metadata = {
 //   title: "Do Your Own Research",
-//   description: "D.Y.O.R platform is used to track the markets and provide real-time insights and information into the current state of stocks, bonds and crypto investments made by the users.",
+//   description: "Insights platform is used to track the markets and provide real-time insights and information into the current state of stocks, bonds and crypto investments made by the users.",
 // };
 
 export default function RootLayout({

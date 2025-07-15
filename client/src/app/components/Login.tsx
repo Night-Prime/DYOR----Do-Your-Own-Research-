@@ -69,7 +69,7 @@ const Login: React.FC<LoginProps> = ({ modal }) => {
           `}</style>
           <div className="w-full flex flex-row justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-gray-800">
-              Login into DYOR
+              Login into Insights
             </h2>
             <button
               className="absolute top-2 right-5 text-red-600 text-xl font-bold hover:text-red-800 transition duration-200 focus:outline-none"

@@ -169,12 +169,10 @@ func NewAIService(aiInsightClient AIInsightClient) *AIService{
 }
 
 
-func (a *AIService) GetAIInsightsSummary(asset string) (models.FinancialAnalysisResponse, error) {
-    prompt := fmt.Sprintf(`{
-        "test": "So I'm investing into $%s, I need a breakdown of the financial statements & performance over the past year"
-    }`, asset)
+func (a *AIService) GetAIInsightsSummary(asset string, promptType string) (models.FinancialAnalysisResponse, error) {
+    prompt := fmt.Sprintf("Search the web for the real time data %v,", asset)
     
-    analysis, err := a.aiInsightClient.GetAssetInsight(prompt)
+    analysis, err := a.aiInsightClient.GetAssetInsight(prompt, promptType)
     if err != nil {
         return models.FinancialAnalysisResponse{}, err
     }

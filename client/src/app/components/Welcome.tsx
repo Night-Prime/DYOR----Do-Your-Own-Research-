@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Asset, User } from '../data/models';
@@ -6,7 +6,7 @@ import AssetBtn from '../shared/AssetBtn';
 import { crypto, stocks } from '../data/asset';
 import { showAlert } from '../core/alertSlice';
 import LottieAnimation from '../shared/LottieAnimation';
-import { ALL_GOALS, AssetPreference } from '../data/Investment';
+import { ALL_GOALS, AssetPreference } from '../data/investment';
 import { UpdatePortfolioFormState, UpdatePortfolioSchema} from '../utils/validation';
 import { updatePortfolio } from '../utils/api';
 import { useAppDispatch, useAppSelector } from '../hooks/hook';
@@ -23,16 +23,17 @@ interface WelcomeProps {
 const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
     const portfolioDetails = useAppSelector((state) => state.portfolio);
     const {id, user_id, name} = portfolioDetails;
+
     const dispatch = useAppDispatch();
     const [currentStep, setCurrentStep] = useState<number>(0);
 
-    const {handleSubmit, watch, getValues, setValue, formState: {}} = useForm<UpdatePortfolioFormState>({
+    const {handleSubmit, watch, getValues, setValue, formState: {errors}, reset} = useForm<UpdatePortfolioFormState>({
         resolver: zodResolver(UpdatePortfolioSchema),
         defaultValues: {
             portfolio: {
-                id: id,
-                user_id: user_id,
-                name: name,
+                id: '',
+                user_id: '',
+                name: '',
                 total_value: 0,
                 investment_goals: [],
                 asset_preference: []
@@ -43,7 +44,17 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
         }
     })
     const onSubmit: SubmitHandler<UpdatePortfolioFormState> = async (data: UpdatePortfolioFormState) => {
-        console.log("Form Data: ", data);
+            if(Object.keys(errors).length > 0) {
+                console.log("Errors: ", errors)
+                const errorMessages = Object.values(errors).map(error => error?.message).filter(Boolean);
+                errorMessages.forEach(message => {
+                    dispatch(showAlert({
+                        type: 'error',
+                        message: message || 'Complete Form',
+                    }));
+                });
+            }
+            // console.log("Form Data: ", data);
             const formData = new FormData();
             formData.append('portfolio', JSON.stringify(data.portfolio));
             formData.append('assets', JSON.stringify(data.assets));
@@ -124,7 +135,7 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
     const WelcomeScreen = () => {
         return (
             <div className="w-full h-full space-y-6">
-                <h2 className="text-2xl font-bold text-lime-700 mb-4 text-center">Welcome to D.Y.O.R</h2>
+                <h2 className="text-2xl font-bold text-lime-700 mb-4 text-center">Welcome to Insights</h2>
                 <h3 className="text-xl font-bold text-lime-700 mb-4 text-center">Your Trusted Financial Intelligence Platform</h3>
                 <p className="text-neutral-600 text-center flex-grow">
                     We empower your portfolio with real-time market tracking, personalized portfolio insights, and intelligent predictions in the market.
@@ -264,7 +275,7 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
             <div className='w-full h-full space-y-6'>
                 <div className='w-full h-full flex flex-col gap-4'>
                     <div className='w-full border-b-[0.5px] border-gray'>
-                        <h3 className='text-4xl font-extrabold'>Hello {user ? user?.first_name : 'User'}, Welcome to DYOR </h3>
+                        <h3 className='text-4xl font-extrabold'>Hello {user ? user?.first_name : 'User'}, Welcome to Insights </h3>
                     </div>
                     <div className='w-full'>
                         <h3 className='text-lg'>Select the financial investments you wish to add to your portfolio below.</h3>
@@ -303,7 +314,7 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
         return (
             <div className='w-full h-full space-y-6'>
                 <div className="flex flex-col items-center justify-center flex-grow text-center">
-                    <h2 className="text-2xl font-bold text-lime-700">Almost There! Your D.Y.O.R Experience is Being Tailored.</h2>
+                    <h2 className="text-2xl font-bold text-lime-700">Almost There! Your Insights Experience is Being Tailored.</h2>
                     <LottieAnimation lottie={`/assets/Business Team Animation.lottie`} />
                     <p className="text-neutral-600 mb-8">
                         We&apos;re setting up your personalized dashboard and integrating your selections. Get ready for smarter insights!
@@ -335,8 +346,23 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
         }
     };
 
-
-    
+    useEffect(() => {
+        if(id && user_id && name) {
+            reset({
+                portfolio: {
+                    id: id,
+                    user_id: user_id,
+                    name: name,
+                    total_value: 0,
+                    investment_goals: [],
+                    asset_preference: []
+                },
+                assets: {
+                    add: [],
+                }
+            })
+        }
+    }, [id, name, reset, user_id])
 
 
     return (
@@ -390,8 +416,8 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
                                 </button>
                             ) : (
                                 <button
+                                    disabled={!errors}
                                     type="submit"
-                                   
                                     className="px-6 py-2 bg-lime-700 text-white rounded-lg font-medium hover:bg-lime-800 transition-colors"
                                 >
                                     Complete

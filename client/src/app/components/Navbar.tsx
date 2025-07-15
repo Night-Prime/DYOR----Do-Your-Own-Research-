@@ -44,7 +44,7 @@ const Navbar = () => {
       {!activeModal && (
         <div className="fixed top-0 w-[95%] h-auto flex flex-row justify-between items-center z-50">
           <div className="mt-10">
-            <h1 className="text-2xl font-bold text-lime-800">DYOR</h1>
+            <h1 className="text-2xl font-bold text-lime-800">Insights</h1>
           </div>
           <div>
             <ul className="flex flex-row gap-5">

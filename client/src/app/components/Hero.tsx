@@ -4,7 +4,7 @@ const Hero = () => {
   return (
     <div className="w-full h-full flex flex-row justify-start items-center gap-4">
       <div className="w-[40%] h-full flex flex-col justify-center items-start gap-2">
-        <h1 className="text-xl font-extrabold text-lime-900">What&apos;s D.Y.O.R ?</h1>
+        <h1 className="text-xl font-extrabold text-lime-900">What&apos;s Insights ?</h1>
         <p className="text-xs font-bold text-lime-800 w-[60%]">
             Your Smart Financial Analyst that manages & preserves your portfolio while providing you with opportunities to make more money.
         </p>
@@ -12,7 +12,7 @@ const Hero = () => {
 
       <div className="w-[60%] h-full flex flex-col justify-center items-start gap-2 mt-16">
         <h1 className="text-4xl font-semibold text-lime-700">
-            <span className="text-lime-800">D.Y.O.R</span> combines real-time market data + social sentiment to give you actionable investment signals.
+            <span className="text-lime-800">Insights</span> combines real-time market data + social sentiment to give you actionable investment signals.
         </h1>
       </div>
     </div>

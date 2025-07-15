@@ -26,4 +26,5 @@ type FinancialAnalysisResponse struct {
 
 type AssetInsightsRequest struct {
 	AssetInfo string `json:"asset_info"`
+	PromptType string `json:"prompt_type"`
 }

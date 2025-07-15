@@ -157,7 +157,7 @@ func (h *AssetHandler) GetAIInsightsHandler(w http.ResponseWriter, r *http.Reque
 		return
     }
     
-    summary, err := h.aiService.GetAIInsightsSummary(req.AssetInfo)
+    summary, err := h.aiService.GetAIInsightsSummary(req.AssetInfo, req.PromptType)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

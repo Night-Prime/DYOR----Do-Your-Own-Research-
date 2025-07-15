@@ -11,14 +11,12 @@ import (
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/config"
 	"github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/models"
     "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
+    "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/utils"
 )
 
 // Here, this service is responsible for fetching data from various APIs.
 // It defines interfaces for different asset types (stocks, bonds, news and cryptocurrencies)
 // and implements the functions to fetch data from those APIs.
-
-// (Lot of Dependency Injection happening here)
-// TODO Implement the SendRequest reusable function when refactoring
 
 // For Stock:
 type StockAPIClient interface {
@@ -42,33 +40,7 @@ func (c *stockClientImpl) GetStockData(symbol string) ([]models.StockData, error
         "symbols": symbol,
     }
 
-    // construct the URL with query parameters
-    url := fmt.Sprintf("%s?%s", cfg.StockAPI_URL, "symbols="+queryParams["symbols"])
-    req, err := http.NewRequest("GET", url, nil)
-    if err != nil {
-        return nil, &errors.DatabaseError{
-            Message: "Request Error",
-            Err: err,
-        }
-    }
-
-    req.Header.Set("x-rapidapi-host", cfg.StockHostname)
-    req.Header.Set("x-rapidapi-key", cfg.StockAPI_Key)
-	req.Header.Set("Accept-Encoding", "application/json")
-
-
-    res, err := http.DefaultClient.Do(req)
-    if err != nil {
-        return nil, &errors.DatabaseError{
-            Message: "Request Error",
-            Err: err,
-        }
-    }
-    defer res.Body.Close()
-
-    if res.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("Error: %s", res.Status)
-    }
+    res, err := utils.SendRequest(cfg.StockAPI_URL, "GET", queryParams, "GetStockData", nil)
 
 	bodyBytes, err := io.ReadAll(res.Body)
     if err != nil {
@@ -118,40 +90,12 @@ func (c *cryptoClientImpl) GetCryptoData (symbols []string) ([]models.CryptoData
         "symbol": strings.Join(symbols, ","),
     }
 
-    req, err := http.NewRequest("GET", cfg.CryptoAPI_URL, nil)
+    res, err := utils.SendRequest(cfg.CryptoAPI_URL, "GET", queryParams, "GetCryptoData", nil)
     if err != nil {
-        return nil, &errors.DatabaseError{
-            Message: "Request Error",
-            Err: err,
-        }
+        return nil, err
     }
 
-    // adding the queries (what's going on here ?)
-    q := req.URL.Query()
-    for key, value := range queryParams {
-        if key == "symbol" {
-            for _, symbol := range strings.Split(value, ",") {
-                q.Add("symbols", symbol)
-            }
-        } else {
-            q.Add(key, value)
-        }
-    }
-    req.URL.RawQuery = q.Encode()
-
-
-    res, err := http.DefaultClient.Do(req)
-    if err != nil {
-        return nil, &errors.DatabaseError{
-            Message: "Response Error",
-            Err: err,
-        }
-    }
-    defer res.Body.Close()
-
-    if res.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("Error: %s", res.Status)
-    }
+    defer res.Body.Close() 
 
     bodyBytes, err := io.ReadAll(res.Body)
     if err != nil {
@@ -205,26 +149,7 @@ func (c *newsClientImpl) GetNewsData() ([]*models.News, error) {
         "limit":"200",
     }
 
-    req, err := http.NewRequest("GET", cfg.VANTAGE_URL, nil)
-    if err != nil {
-        return nil, fmt.Errorf("Request error: %v", err)
-    }
-
-    // adding the queries
-    q := req.URL.Query()
-    for key, value := range queryParams {
-        q.Add(key, value)
-    }
-    req.URL.RawQuery = q.Encode()
-    res, err := http.DefaultClient.Do(req)
-    if err != nil {
-        return nil, err
-    }
-    defer res.Body.Close()
-
-    if res.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("Error: %s", res.Status)
-    }
+    res, err := utils.SendRequest(cfg.VANTAGE_URL, "GET", queryParams, "GetNewsData", nil)
 
     bodyBytes, err := io.ReadAll(res.Body)
     if err != nil {
@@ -263,27 +188,8 @@ func (c *newsClientImpl) GetTopGainersLosers() (*models.TickerUpdates, error) {
         "function": cfg.VANTAGE_FUNCTION_TOP,
         "apikey": cfg.VANTAGE_KEY,
     }
-
-    req, err := http.NewRequest("GET", cfg.VANTAGE_URL, nil)
-    if err != nil {
-        return nil, fmt.Errorf("Request error: %v", err)
-    }
-
-    // adding the queries
-    q := req.URL.Query()
-    for key, value := range queryParams {
-        q.Add(key, value)
-    }
-    req.URL.RawQuery = q.Encode()
-    res, err := http.DefaultClient.Do(req)
-    if err != nil {
-        return nil, err
-    }
-    defer res.Body.Close()
-
-    if res.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("Error: %s", res.Status)
-    }
+    
+    res, err := utils.SendRequest(cfg.VANTAGE_URL, "GET", queryParams, "GetNewsData", nil)
 
     bodyBytes, err := io.ReadAll(res.Body)
     if err != nil {
@@ -300,7 +206,7 @@ func (c *newsClientImpl) GetTopGainersLosers() (*models.TickerUpdates, error) {
 }
 
 type AIInsightClient interface {
-    GetAssetInsight(assetInfo string) (models.FinancialAnalysisResponse, error)
+    GetAssetInsight(assetInfo string, promptType string) (models.FinancialAnalysisResponse, error)
 }
 
 type AIInsightClientImpl struct {}
@@ -309,47 +215,13 @@ func NewAIClient() AIInsightClient {
     return &AIInsightClientImpl{}
 }
 
-func (a *AIInsightClientImpl) GetAssetInsight(assetInfo string) (models.FinancialAnalysisResponse, error) {
+func (a *AIInsightClientImpl) GetAssetInsight(assetInfo string, promptType string) (models.FinancialAnalysisResponse, error) {
     fmt.Println("The AI insight Client Layer")
     fmt.Println("--------------------------------------------- \n")
 
     cfg := config.Get()
 
-    prompt := fmt.Sprintf(`
-    You are an expert financial analyst and investment advisor with deep expertise in:
-    - Traditional financial markets (stocks, bonds, commodities)
-    - Cryptocurrency and digital asset markets
-    - DeFi protocols and yield farming strategies
-    - NFT market dynamics and valuation
-    - Blockchain metrics and on-chain analysis
-    - Technical analysis and chart patterns
-    - Risk assessment and portfolio management
-    - Economic indicators and market trends
-    - Sector analysis and industry dynamics
-    - Investment strategies and recommendations.
-
-    You are tasked with analyzing the following real-time asset data. The assets may be a mix of traditional stocks and cryptocurrencies. Perform a comprehensive, multi-layered financial analysis on each asset individually and then provide a portfolio-wide assessment.
-
-    Injected Real-Time Data:
-    %s
-
-    Tasks:
-    1. Market Sentiment: Overall market mood, confidence level, key drivers, and sentiment score
-    2. Technical Analysis: Trend direction, support/resistance levels, indicators (RSI, MACD, volume, moving averages, patterns, momentum)
-    3. Risk Assessment: Overall risk level, risk types (market, liquidity, volatility, regulatory, smart contract), volatility level, downside protection
-    4. Actionable Insights: Investment recommendations (buy/sell/hold), price targets (short/medium/long term), time horizon, entry/exit points, probability estimates
-    5. Crypto-Specific Analysis (If Type = Crypto): Tokenomics, on-chain metrics, DeFi/NFT metrics if applicable
-    6. Additional Analysis: Correlation between assets, macroeconomic impact, regulatory outlook, sector dynamics, innovation trends, and competitive landscape
-
-    Output Format:
-    Always respond as an Essay Write up, Multiple Major paragraphs for each asset, (Not a markdown but plain text as you need to strip away any potential '*', newlines '\n', or double new lines '\n\n' of any kind shouldn't be there).
-    
-
-    Notes:
-    - Use actual numerical values from the data provided (market cap, price changes, volume, etc.)
-    - Apply contextual financial reasoning for each insight.
-    - Score each metric when appropriate, even if approximate.
-    `, assetInfo)
+    prompt := utils.ChoosePrompt(promptType, assetInfo)
 
     reqBody := models.PromptRequest{
         Model: cfg.AI_MODEL,
@@ -360,6 +232,8 @@ func (a *AIInsightClientImpl) GetAssetInsight(assetInfo string) (models.Financia
             },
         },
     }
+
+    fmt.Printf("Request Body: %+v\n", reqBody)
 
     body, err := json.Marshal(reqBody)
     if err != nil {

@@ -26,8 +26,8 @@ const AISummary = () => {
         const newAsset = getRandomAsset();
         setCurrentAsset(newAsset);
         setLastShuffleTime(Date.now());
-        const response = await getAssetsInsights(newAsset.symbol, "asset_insight");
-        if(response.success) setSummary(response.data.sentiment);
+        // const response = await getAssetsInsights(newAsset.symbol, "asset_insight");
+        // if(response.success) setSummary(response.data.sentiment);
     };
 
     const processSummary = (summary: any): string => {
@@ -85,7 +85,8 @@ const AISummary = () => {
                             {/* {assets.length > 0 ? "See more" : "Add Assets"} */}
                             See more
                         </button>
-                    </div>)}
+                    </div>
+                )}
             </div>
         </div>
         {showAIModal && <AIModal close={toggleModal} summary={summary} asset={currentAsset} />}

@@ -4,6 +4,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 import authReducer from "./authSlice";
 import alertReducer from "./alertSlice";
 import portfolioReducer from "./portfolioSlice";
+import navigationReducer from "./navigationSlice";
 
 // configuration for Persists:
 const persistConfig = {
@@ -18,7 +19,8 @@ export const store = configureStore({
     reducer : {
         auth: persistAuthReducer,
         alert: alertReducer,
-        portfolio: portfolioReducer
+        portfolio: portfolioReducer,
+        navigation: navigationReducer
     },
     middleware: (getDefaultMiddleware) => 
         getDefaultMiddleware({

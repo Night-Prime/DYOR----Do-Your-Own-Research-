@@ -65,7 +65,6 @@ export const formatAssetData = (asset: {
             stocks: stockAssets
         };
     }
-    console.log("Main: ", [...cryptoAssets, ...stockAssets]);
     // Properly merge arrays (not with object spread)
     return [...cryptoAssets, ...stockAssets];
 };

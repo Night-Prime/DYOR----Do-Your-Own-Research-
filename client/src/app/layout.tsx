@@ -7,6 +7,7 @@ import { ThemeProvider } from "@material-tailwind/react";
 import { persistor, store } from "./core/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { GlobalAlert } from "./shared/GlobalAlert";
+import { NavigationProvider } from "./provider/NavigationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,9 @@ export default function RootLayout({
         <ThemeProvider>
           <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-              {children}
+            <NavigationProvider>
+            {children}
+            </NavigationProvider>
               <GlobalAlert />
               </PersistGate>
             </Provider>

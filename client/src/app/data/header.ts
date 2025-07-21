@@ -3,38 +3,38 @@
 export const headerCopy = [
     {
         page: "dashboard",
-        header: "Dashboard",
-        subheading: "Your financial world at a glance. Smart insights, tailored for you",
-        description: "Aggregated data visualizations, headline news, AI-generated summaries"
+        header: "Market Pulse Dashboard",
+        subheading: "Command your financial universe with real-time intelligence and AI-curated insights",
+        description: "Live multi-asset monitoring, predictive analytics, and personalized news streams that anticipate your needs before you search"
     },
     {
         page: "portfolio",
-        header: "Your Portfolio",
-        subheading: "Your investments, intelligently managed. See your growth, understand your position.",
-        description: "Interactive portfolio charts, detailed asset breakdown, historical performance graphs, tax-relevant data, transaction logs"
+        header: "Portfolio War Room",
+        subheading: "Your wealth battlefield visualized - dominate with surgical precision",
+        description: "3D portfolio holograms, stress-test simulations, tax optimization alerts, and institutional-grade forensic analysis of every position"
     },
-    {
+        {
         page: "market",
-        header: "Open Market",
-        subheading: "Track every market move. Comprehensive data, powerful analysis.",
-        description: "Real-time price feeds, historical charts, technical indicators, news articles, market commentary"
+        header: "Global Markets Terminal",
+        subheading: "Wall Street-grade analytics at your fingertips - spot opportunities before they trend",
+        description: "Laser-focused sector heatmaps, dark pool liquidity indicators, whale-watching alerts, and sentiment-powered trading signals"
     },
     {
         page: "insights",
-        header: "Insights & Predictions",
-        subheading: "Predict the future, understand the present. AI-powered insights for smarter decisions.",
-        description: "AI-generated predictions, natural language explanations, risk scores, market trend reports, actionable suggestions"
+        header: "Predictive Intelligence Hub",
+        subheading: "Outthink the market with quantum-powered foresight",
+        description: "Proprietary AI models forecasting price movements, black swan early-warning systems, and algorithmic strategy backtesting"
     },
     {
         page: "learn",
-        header: "Resources & Learning",
-        subheading: "Grow your knowledge, grow your wealth. Empowering you to Insights.",
-        description: "Articles, videos, infographics, step-by-step guides, definitions, Q&A"
+        header: "Trading Dojo",
+        subheading: "Transform from investor to market samurai - master the art of wealth creation",
+        description: "Interactive trading simulations, hedge fund masterclasses, technical analysis katas, and live fire-drill exercises"
     },
     {
         page: "settings",
-        header: "Resources & Learning",
-        subheading: "User profile fields, toggle options, API connection guides, privacy policy, subscription details",
-        description: "Customize your experience. Secure your data. Control your financial journey."
-    },
-]
+        header: "Mission Control",
+        subheading: "Configure your financial command center for peak performance",
+        description: "Institutional-grade security protocols, API warfare tools, and personalized analytics dashboards - your rules, your domain"
+    }
+];

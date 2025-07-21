@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import Feed from '../components/Feed';
+import {Feed} from '../components/Feed';
 
 const page = () => {
   return (

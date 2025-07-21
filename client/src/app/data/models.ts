@@ -50,3 +50,10 @@ export interface AssetResponse {
     symbol: string;
     amount: number | string;
 }
+
+export interface Header {
+    page : string,
+    header: string,
+    subheading: string,
+    description: string
+}

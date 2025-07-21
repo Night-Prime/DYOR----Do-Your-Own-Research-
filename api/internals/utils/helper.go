@@ -94,12 +94,12 @@ func SendRequest(url string, method string, queryParams map[string]string, query
 }
 
 func StripAllFormatting(text string) string {
-	text = regexp.MustCompile(`[#*_\-~`+"`]").ReplaceAllString(text, "")
-	text = regexp.MustCompile(`<[^>]*>`).ReplaceAllString(text, "")
-	text = regexp.MustCompile(`https?://\S+`).ReplaceAllString(text, "")
-	text = regexp.MustCompile(`\[([^\]]+)\]\([^\)]+\)`).ReplaceAllString(text, `$1`)
-	text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
-	text = regexp.MustCompile(`[^\w\s.,!?;:'"-]`).ReplaceAllString(text, "")
-	
-	return strings.TrimSpace(text)
+    text = regexp.MustCompile(`[#*_\-~`+"`]").ReplaceAllString(text, "")
+    text = regexp.MustCompile(`<[^>]*>`).ReplaceAllString(text, "")
+    text = regexp.MustCompile(`https?://\S+`).ReplaceAllString(text, "")
+    text = regexp.MustCompile(`\[([^\]]+)\]\([^\)]+\)`).ReplaceAllString(text, `$1`)
+    text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
+    text = regexp.MustCompile(`[^\w\s.,!?;:'"$€£¥¢-]`).ReplaceAllString(text, "")
+    
+    return strings.TrimSpace(text)
 }

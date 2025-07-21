@@ -24,7 +24,7 @@ const Feed = () => {
   // const {data: news, loading: newsLoading, error:newsError} = useFetch<any>("user/news");
   // const {data:ticker} = useFetch<any>("user/top-gainers-losers");
 
-  const news = JSON.parse(localStorage.getItem('news') || '[]');
+  const news = JSON.parse(localStorage.getItem('user/news') || '[]');
 
   // Dispatch portfolio data only when it's available
   useEffect(() => {

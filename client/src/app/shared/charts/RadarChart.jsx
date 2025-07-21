@@ -62,7 +62,7 @@ const RiskRadarChart = () => {
     };
 
     return (
-        <div className="w-full h-80 p-4 bg-white rounded-lg shadow-sm">
+        <div className="w-full h-full flex flex-col items-center bg-gray-50 rounded-3xl shadow-sm">
             <ResponsiveContainer width="100%" height="90%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                     <PolarGrid stroke="#e0e0e0" />

@@ -8,48 +8,48 @@ const data = [
   { name: 'Bullish', value: 40, color: '#006400' }, // Softer green
 ];
 
-const PortfolioHealthGauge = ({score}) => {
-  const width = 250;
-  const height = 180;
-  
+const PortfolioHealthGauge = ({ score }) => {
+  const width = 320;
+  const height = 300;
+
   // Center points
   const cx = width / 2;
-  const cy = height - 60;
-  
-  // Radius values
-  const iR = 50;
-  const oR = 100;
-  
+  const cy = height - 70; // Adjusted for new height
+
+  // Radius values - proportionally scaled
+  const iR = 60; // Slightly larger inner radius
+  const oR = 140; // Much larger outer radius
+
   // Needle value (position)
   const value = score;
   const total = data.reduce((sum, entry) => sum + entry.value, 0);
-  
+
   // Custom shape to create rounded edges on pie segments
   const CustomSector = (props) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
-    
+
     // Calculate the coordinates for the outer arc path
     const sin = Math.sin(-RADIAN * startAngle);
     const cos = Math.cos(-RADIAN * startAngle);
     const sin2 = Math.sin(-RADIAN * endAngle);
     const cos2 = Math.cos(-RADIAN * endAngle);
-    
+
     // Start and end points of outer arc
     const outerStartX = cx + outerRadius * cos;
     const outerStartY = cy + outerRadius * sin;
     const outerEndX = cx + outerRadius * cos2;
     const outerEndY = cy + outerRadius * sin2;
-    
+
     // Start and end points of inner arc
     const innerStartX = cx + innerRadius * cos;
     const innerStartY = cy + innerRadius * sin;
     const innerEndX = cx + innerRadius * cos2;
     const innerEndY = cy + innerRadius * sin2;
-    
+
     // Create the path for the sector with rounded edges
     // We're adding a small radius for the corners
     const cornerRadius = 5;
-    
+
     // This is a simplified approach - for a complete solution with perfect
     // rounded corners, more complex path calculations would be needed
     return (
@@ -76,17 +76,17 @@ const PortfolioHealthGauge = ({score}) => {
       </g>
     );
   };
-  
+
   // Custom legend renderer
   const renderCustomizedLegend = (props) => {
     const { payload } = props;
-    
+
     return (
       <div className="flex justify-center mt-1 pt-2">
         {payload.map((entry, index) => (
           <div key={`legend-item-${index}`} className="flex items-center mx-3">
-            <div 
-              className="w-3 h-3 mr-1 rounded-full" 
+            <div
+              className="w-3 h-3 mr-1 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
             <span className="text-xs text-gray-700">{entry.value}</span>
@@ -95,7 +95,7 @@ const PortfolioHealthGauge = ({score}) => {
       </div>
     );
   };
-  
+
   // Needle rendering function
   const renderNeedle = () => {
     const ang = 180.0 * (1 - value / total);
@@ -123,7 +123,7 @@ const PortfolioHealthGauge = ({score}) => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center bg-gray-50 rounded-lg p-4">
+    <div className="w-full h-full flex flex-col items-center bg-gray-50 rounded-3xl shadow-sm">
       <PieChart width={width} height={height}>
         <defs>
           {/* Add subtle gradient to make gauge look better */}
@@ -140,7 +140,7 @@ const PortfolioHealthGauge = ({score}) => {
             <stop offset="100%" stopColor="#a5d6a7" />
           </linearGradient>
         </defs>
-        
+
         <Pie
           dataKey="value"
           startAngle={180}
@@ -162,14 +162,14 @@ const PortfolioHealthGauge = ({score}) => {
             if (index === 0) fillId = "url(#bearishGradient)";
             else if (index === 1) fillId = "url(#normalGradient)";
             else fillId = "url(#bullishGradient)";
-            
+
             return <Cell key={`cell-${index}`} fill={entry.color} />;
           })}
         </Pie>
         {renderNeedle()}
-        <Legend 
+        <Legend
           content={renderCustomizedLegend}
-          verticalAlign="bottom" 
+          verticalAlign="bottom"
           height={36}
         />
       </PieChart>

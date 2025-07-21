@@ -44,7 +44,7 @@ func ChoosePrompt(promptType string, asset interface{}) string {
 		%s
 	
 		Tasks:
-		1. Market Sentiment: Overall market mood, confidence level, key drivers, and sentiment score
+		1. Market Sentiment: The Trading Price, Overall market mood, confidence level, key drivers, and sentiment score
 		2. Technical Analysis: Trend direction, support/resistance levels, indicators (RSI, MACD, volume, moving averages, patterns, momentum)
 		3. Risk Assessment: Overall risk level, risk types (market, liquidity, volatility, regulatory, smart contract), volatility level, downside protection
 		4. Actionable Insights: Investment recommendations (buy/sell/hold), price targets (short/medium/long term), time horizon, entry/exit points, probability estimates

@@ -24,6 +24,7 @@ export const getAssetData = async (stock_symbol?: string[], crypto_symbol?: stri
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/asset/get-live-update?${queryParams}`, {
             withCredentials: true,
         });
+        //TODO we set an env that triggers storing data to the localStorage 
         localStorage.setItem("recommended", JSON.stringify(response))
         return {
             success: true,
@@ -40,3 +41,27 @@ export const getAssetData = async (stock_symbol?: string[], crypto_symbol?: stri
         };
     }
 };
+
+export const getAssetsInsights = async(asset: string, promptType : string):Promise<any> => {
+    try {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/asset/get-ai-summary`, {
+            asset_info : asset,
+            prompt_type: promptType
+        });
+
+        return {
+            success: true,
+            data: response.data,
+        };
+
+    } catch(error) {
+        if (axios.isAxiosError(error) && error.response) {
+            return {
+                errors: error.response.data.errors || { general: ["An error occurred during signup."] },
+            };
+        }
+        return {
+            errors: { general: ["Failed to connect to the signup service."] },
+        };
+    }
+}

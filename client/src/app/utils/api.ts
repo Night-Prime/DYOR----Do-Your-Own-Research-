@@ -1,25 +1,10 @@
 import axios from "axios";
-import { ApiResponse, AssetPayload} from "../data/models";
+import { ApiResponse} from "../data/models";
 import { UpdatePortfolioFormState, UpdatePortfolioSchema } from "./validation";
 
 // here, all api calls are made to the server directly:
 
 axios.defaults.withCredentials = true;
-
-export const saveAssets = async (payload: AssetPayload): Promise<ApiResponse<AssetPayload>> => {
-  try {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/asset/create-asset`, payload, {
-      withCredentials: true
-    });
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
 
 export async function updatePortfolio(
   state: UpdatePortfolioFormState,

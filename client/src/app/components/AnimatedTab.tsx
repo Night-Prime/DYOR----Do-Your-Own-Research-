@@ -27,7 +27,7 @@ const AnimatedTab: React.FC<AnimatedTabSwitchProps> = ({
     };
 
     return (
-        <div className="w-full bg-gray-200 max-w-xl mx-auto p-4 rounded-3xl mb-2">
+        <div className="w-full h-1/2 flex-1 bg-gray-200 max-w-xl mx-auto p-4 rounded-3xl mb-2">
             <div className='rounded-3xl shadow-sm relative'>
                 <div
                     className='absolute h-full w-1/2 bg-lime-950 rounded-3xl shadow-sm transition-transform duration-300 ease-in-out'
@@ -48,14 +48,14 @@ const AnimatedTab: React.FC<AnimatedTabSwitchProps> = ({
                     </button>
                 </div>
             </div>
-            <div>
+            <div className='h-[90%]'>
                 {activeTab === 0 && (
-                    <div className="p-2">
+                    <div className="mt-2 w-full h-full">
                         {chartComponent1}
                     </div>
                 )}
                 {activeTab === 1 && (
-                    <div className="p-2">
+                    <div className="mt-2  w-full h-full">
                         {chartComponent2}
                     </div>
                 )}

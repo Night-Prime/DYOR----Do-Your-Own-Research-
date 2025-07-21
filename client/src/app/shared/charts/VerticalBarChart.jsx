@@ -17,7 +17,7 @@ const VerticalBarChart = ({recommended}) => {
     price: Number(asset.amount)
   })) || [];
   return (
-    <div className="bg-gray-100 rounded-3xl w-full h-80 p-2">
+    <div className="w-full h-full flex flex-col items-center bg-gray-50 rounded-3xl shadow-sm">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"

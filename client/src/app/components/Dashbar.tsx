@@ -10,10 +10,10 @@ const Dashbar = () => {
       <main className="w-full h-full flex flex-row justify-between p-6 text-lime-800">
         <div className='block'>
           <h1 className='text-3xl font-bold my-1'>
-            News Feed & Insights
+            News Feed
           </h1>
           <h3 className="text-md font-medium text-lime-900">
-            Welcome back, {name}. Here’s what’s moving the financial markets today.
+            Welcome back, {name}. Here’s what’s going on in the financial market today.
           </h3>
 
         </div>

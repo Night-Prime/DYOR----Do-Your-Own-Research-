@@ -18,7 +18,6 @@ export const navigationSlice = createSlice({
     reducers: {
         setCurrentPage: (state, action: PayloadAction<string>) => {
             let pagePath = action.payload.trim();
-            console.log(pagePath);
             if (!pagePath || pagePath === '/') pagePath = 'dashboard';
             
             const basePath = pagePath.split('/')[0];

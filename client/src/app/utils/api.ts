@@ -39,8 +39,6 @@ export async function updatePortfolio(
     };
   }
 
-  console.log("Validated: ", validatedData);
-
 
   try {
     const response = await axios.put(

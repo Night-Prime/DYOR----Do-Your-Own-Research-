@@ -17,14 +17,12 @@ export interface T {
 
 export const getAssetData = async (stock_symbol?: string[], crypto_symbol?: string[]): Promise<any> => {
     try {
-        console.log("Available: ", stock_symbol, crypto_symbol);
         const stockParams = stock_symbol ? `stock_symbols=${stock_symbol.join(",")}` : "";
         const cryptoParams = crypto_symbol ? `crypto_symbols=${crypto_symbol.join(",")}` : "";
         const queryParams = [stockParams, cryptoParams].filter(Boolean).join("&");
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/asset/get-live-update?${queryParams}`, {
             withCredentials: true,
         });
-        //TODO we set an env that triggers storing data to the localStorage 
         localStorage.setItem("recommended", JSON.stringify(response))
         return {
             success: true,

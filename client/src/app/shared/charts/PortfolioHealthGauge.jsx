@@ -1,6 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Legend, Surface, Curve } from 'recharts';
 
+
 const RADIAN = Math.PI / 180;
 const data = [
   { name: 'Bearish', value: 40, color: '#D2042D' }, // Softer red
@@ -8,7 +9,7 @@ const data = [
   { name: 'Bullish', value: 40, color: '#006400' }, // Softer green
 ];
 
-const PortfolioHealthGauge = ({ score }) => {
+const PortfolioHealthGauge = ({ score, label }) => {
   const width = 320;
   const height = 300;
 
@@ -123,57 +124,68 @@ const PortfolioHealthGauge = ({ score }) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center bg-gray-50 rounded-3xl shadow-sm">
-      <PieChart width={width} height={height}>
-        <defs>
-          {/* Add subtle gradient to make gauge look better */}
-          <linearGradient id="bearishGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#e57373" />
-            <stop offset="100%" stopColor="#ef9a9a" />
-          </linearGradient>
-          <linearGradient id="normalGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#fff59d" />
-            <stop offset="100%" stopColor="#fff9c4" />
-          </linearGradient>
-          <linearGradient id="bullishGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#81c784" />
-            <stop offset="100%" stopColor="#a5d6a7" />
-          </linearGradient>
-        </defs>
+    <div className="w-full h-full flex flex-col items-center justify-between bg-gray-50 rounded-3xl shadow-sm p-6">
+  {/* Title Section */}
+  <div className="w-full text-center mb-0">
+    <h1 className="text-2xl font-semibold text-lime-800">{label}</h1>
+  </div>
 
-        <Pie
-          dataKey="value"
-          startAngle={180}
-          endAngle={0}
-          data={data}
-          cx={cx}
-          cy={cy}
-          innerRadius={iR}
-          outerRadius={oR}
-          fill="#8884d8"
-          stroke="white"
-          strokeWidth={2}
-          activeShape={CustomSector}
-          shape={<CustomSector />}
-        >
-          {data.map((entry, index) => {
-            // Use gradient IDs instead of flat colors
-            let fillId;
-            if (index === 0) fillId = "url(#bearishGradient)";
-            else if (index === 1) fillId = "url(#normalGradient)";
-            else fillId = "url(#bullishGradient)";
+  {/* Chart Container */}
+  <div className="w-full flex-1 flex flex-col items-center justify-center">
+    <PieChart width={width} height={height} className="mb-2">
+      {/* Gradient Definitions */}
+      <defs>
+        <linearGradient id="bearishGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e57373" />
+          <stop offset="100%" stopColor="#ef9a9a" />
+        </linearGradient>
+        <linearGradient id="normalGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fff59d" />
+          <stop offset="100%" stopColor="#fff9c4" />
+        </linearGradient>
+        <linearGradient id="bullishGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#81c784" />
+          <stop offset="100%" stopColor="#a5d6a7" />
+        </linearGradient>
+      </defs>
 
-            return <Cell key={`cell-${index}`} fill={entry.color} />;
-          })}
-        </Pie>
-        {renderNeedle()}
-        <Legend
-          content={renderCustomizedLegend}
-          verticalAlign="bottom"
-          height={36}
-        />
-      </PieChart>
-    </div>
+      {/* Pie Chart */}
+      <Pie
+        dataKey="value"
+        startAngle={180}
+        endAngle={0}
+        data={data}
+        cx={cx}
+        cy={cy}
+        innerRadius={iR}
+        outerRadius={oR}
+        fill="#8884d8"
+        stroke="white"
+        strokeWidth={2}
+        activeShape={CustomSector}
+        shape={<CustomSector />}
+      >
+        {data.map((entry, index) => {
+          let fillId;
+          if (index === 0) fillId = "url(#bearishGradient)";
+          else if (index === 1) fillId = "url(#normalGradient)";
+          else fillId = "url(#bullishGradient)";
+
+          return <Cell key={`cell-${index}`} fill={entry.color || fillId} />;
+        })}
+      </Pie>
+      
+      {/* Needle and Legend */}
+      {renderNeedle()}
+      <Legend 
+        content={renderCustomizedLegend} 
+        verticalAlign="bottom" 
+        height={36}
+        wrapperStyle={{ paddingTop: '10px' }}
+      />
+    </PieChart>
+  </div>
+</div>
   );
 };
 

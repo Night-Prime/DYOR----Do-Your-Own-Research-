@@ -51,16 +51,15 @@ interface PortfolioContentProps {
 }
 
 const PortfolioContentComponent = ({ data, refresh }: PortfolioContentProps) => {
+  // const news = useFetch<any[]>('user/news');
+  // const sentiment = useFetch<any[]>('user/sentiment-score');
+  // const gainer = useFetch<any[]>('user/top-gainers-losers');
+
   const [news, setNews] = useState<any[]>([]);
 
   useEffect(() => {
-    try {
       const storedNews = localStorage.getItem('user/news');
       setNews(storedNews ? JSON.parse(storedNews) : []);
-    } catch (error) {
-      console.error('Error parsing news:', error);
-      setNews([]);
-    }
   }, []);
 
   const emptyPortfolio = !data?.portfolios?.some(

@@ -1,13 +1,8 @@
 "use client"
-import { useAppSelector } from "../hooks/hook"
 import { useHeaderData } from "../hooks/useHeaderData";
 
 const Dashbar = () => {
-  const user = useAppSelector((state) => state.auth.user);
-  const name = user?.first_name ?? '';
-
   const metadata = useHeaderData();
-  console.log("Header Data: ", metadata);
 
   
 
@@ -19,7 +14,6 @@ const Dashbar = () => {
            {metadata?.header || 'Insights'}
           </h1>
           <h3 className="text-md font-medium text-lime-900">
-            Welcome back, {name} ,
              {metadata?.description}
           </h3>
 

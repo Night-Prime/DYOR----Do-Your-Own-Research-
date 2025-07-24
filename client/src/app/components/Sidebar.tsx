@@ -25,14 +25,14 @@ const Sidebar = () => {
 
                 <div className='flex flex-col items-center gap-6'>
                     <div className="flex flex-col items-center justify-center">
-                        <Link href={'dashboard'} >
+                        <Link href={'/dashboard'} >
                             <HomeOutlinedIcon className='cursor-pointer w-8 h-8' />
                         </Link>
                         <p className='text-xs font-semibold'>Home</p>
                     </div> 
 
                     <div className="flex flex-col items-center justify-center">
-                        <Link href={'dashboard/portfolio'} >
+                        <Link href={'/dashboard/portfolio'} >
                             <PortfolioIcon className='cursor-pointer w-8 h-8' />
                         </Link>
                         <p className='text-xs font-semibold'>Portfolio</p>

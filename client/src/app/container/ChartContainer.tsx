@@ -13,21 +13,19 @@ import AISummary from '../components/AISummary';
 const ChartContainer = () => {
     const score = useMemo(() => {
         const raw = localStorage.getItem('user/sentiment-score');
-        const rawTickers = localStorage.getItem('user/top-gainers-losers');
-        const rawRecommendedData = localStorage.getItem('recommended');
+        const rawRecommendedData = localStorage.getItem('user/assets-file?file=recommended');
         return {
             sentiment: JSON.parse(raw || '{}'),
-            tickers : JSON.parse(rawTickers || '{}'),
             recommended: JSON.parse(rawRecommendedData || '{}')
         }
     }, [])
     const market_score = (score.sentiment.sentiment_score ?? 0) * 180;
-    const recommended = formatAssetData(score.recommended.data, true);
+    const recommended = formatAssetData(score.recommended.data, true) || [];
 
 
     return (
         <div className="w-full h-full flex flex-col">
-            <AnimatedTab tab1Label='Market Sentiments' chartComponent1={<PortfolioHealthGauge score={market_score} />} tab2Label='Top Performers' chartComponent2={<VerticalBarChart recommended={recommended} />} />
+            <AnimatedTab tab1Label='Market Sentiments' chartComponent1={<PortfolioHealthGauge score={market_score} label={''} />} tab2Label='Top Performers' chartComponent2={<VerticalBarChart recommended={recommended} />} />
             <AnimatedTab tab1Label='Insight & Analysis' chartComponent1={<AISummary />} tab2Label='Risk Radar' chartComponent2={<RiskRadarChart />} />
             {/* <AnimatedTab tab1Label='Portfolio Health' chartComponent1={<PortfolioHealthGauge score={market_score} />} tab2Label='Recommendations' chartComponent2={<VerticalBarChart recommended={recommended} />} /> */}
         </div>

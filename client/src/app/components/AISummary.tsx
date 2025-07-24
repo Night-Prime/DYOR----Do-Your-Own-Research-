@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react';
 import { useAppSelector } from '../hooks/hook';
 import { Asset } from '../data/models';
@@ -30,7 +31,7 @@ const AISummary = () => {
         // if(response.success) setSummary(response.data.sentiment);
     };
 
-    const processSummary = (summary: any): string => {
+    const processSummary = (summary: string): string => {
         const firstPeriodIndex = summary.indexOf('.');
         const firstSentence = firstPeriodIndex !== -1 
             ? summary.substring(0, firstPeriodIndex + 1) 

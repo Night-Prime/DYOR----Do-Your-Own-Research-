@@ -82,14 +82,12 @@ export async function login(state: loginFormState, formData: FormData) {
             console.log("Err: ", error.response.data);
             return {
                 success: false,
-                errors: error.response.data || { 
-                    general: ['An error occurred during login.'] 
-                },
+                errors: error.response.data || ['An error occurred during login.']
             };
         }
         return {
             success: false,
-            errors: { general: ['Failed to connect to the login service.'] },
+            errors: ['Failed to connect to the login service.'],
         };
     }
 }
@@ -105,7 +103,7 @@ export const logOut = async () => {
         console.log("Err: ", error)
         return {
             success: false,
-            errors: { general: ['Failed to connect to the login service.'] },
+            errors: ['Failed to connect to the login service.']
         };
     }
 };

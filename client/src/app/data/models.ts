@@ -37,6 +37,12 @@ export interface Asset {
     name: string;
     symbol: string;
     type ?: string;
+    current_price ?: number;
+    id?: string;
+    portfolio_id?: string;
+    quantity ?: number;
+    updated_at ?: string;
+    volume ?: string;
 }
 
 export interface AssetPayload {

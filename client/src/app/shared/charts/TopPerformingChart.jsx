@@ -28,7 +28,6 @@ const TopPerformingChart = ({tickers}) => {
 
     // Custom tooltip formatter
     const renderTooltip = ({ active, payload, label }) => {
-        console.log("Payload: ", payload);
         if (active && payload && payload.length) {
             return (
                 <div className="bg-white p-2 border border-gray-200 rounded shadow-sm">

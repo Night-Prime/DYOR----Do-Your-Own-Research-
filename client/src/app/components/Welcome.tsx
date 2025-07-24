@@ -45,7 +45,6 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
     })
     const onSubmit: SubmitHandler<UpdatePortfolioFormState> = async (data: UpdatePortfolioFormState) => {
             if(Object.keys(errors).length > 0) {
-                console.log("Errors: ", errors)
                 const errorMessages = Object.values(errors).map(error => error?.message).filter(Boolean);
                 errorMessages.forEach(message => {
                     dispatch(showAlert({
@@ -54,14 +53,11 @@ const Welcome: React.FC<WelcomeProps> = ({ user, refresh }) => {
                     }));
                 });
             }
-            // console.log("Form Data: ", data);
             const formData = new FormData();
             formData.append('portfolio', JSON.stringify(data.portfolio));
             formData.append('assets', JSON.stringify(data.assets));
 
             const result = await updatePortfolio(data, formData);
-
-            console.log("Result: ", result);
             // On success
             if (result?.success) {
                 refresh();

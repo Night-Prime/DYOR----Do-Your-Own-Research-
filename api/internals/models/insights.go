@@ -27,4 +27,6 @@ type FinancialAnalysisResponse struct {
 type AssetInsightsRequest struct {
 	AssetInfo string `json:"asset_info"`
 	PromptType string `json:"prompt_type"`
+	AllowRealTime bool	`json:"allow_realtime"`
+	AssetType	string	`json:"asset_type"`
 }

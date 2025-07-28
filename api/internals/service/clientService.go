@@ -233,7 +233,9 @@ func (a *AIInsightClientImpl) GetAssetInsight(assetInfo string, promptType strin
         },
     }
 
+    fmt.Println("------------------------------------------->")
     fmt.Printf("Request Body: %+v\n", reqBody)
+    fmt.Println("------------------------------------------->")
 
     body, err := json.Marshal(reqBody)
     if err != nil {

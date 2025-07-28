@@ -3,6 +3,8 @@ package models
 import (
     "fmt"
 	"time"
+    "encoding/json"
+    "database/sql/driver"
 
 	"github.com/google/uuid"
     "github.com/Night-Prime/DYOR----Do-Your-Own-Research-.git/api/internals/errors"
@@ -72,6 +74,21 @@ type CryptoData struct {
     PriceChange1Y      float64 `json:"price_change_1y"`
 }
 
+func (s *CryptoData) Scan(value interface{}) error {
+    if value == nil {
+        return nil
+    }
+    bytes, ok := value.([]byte)
+    if !ok {
+        return fmt.Errorf("Failed to unmarshal Crypto Data: expected []byte, got %T", value)
+    }
+    return json.Unmarshal(bytes, s)
+}
+
+func (s CryptoData) Value() (driver.Value, error) {
+    return json.Marshal(s)
+}
+
 type StockData struct {
     Symbol  string  `json:"symbol"`
     RegularMarketPrice struct {
@@ -91,6 +108,21 @@ type StockData struct {
     RegularMarketChange struct {
         Raw float64 `json:"raw"`
     } `json:"regularMarketChange"`
+}
+
+func (s *StockData) Scan(value interface{}) error {
+    if value == nil {
+        return nil
+    }
+    bytes, ok := value.([]byte)
+    if !ok {
+        return fmt.Errorf("Failed to unmarshal StockData: expected []byte, got %T", value)
+    }
+    return json.Unmarshal(bytes, s)
+}
+
+func (s StockData) Value() (driver.Value, error) {
+    return json.Marshal(s)
 }
 
 type Asset struct {
@@ -116,17 +148,20 @@ type CryptoAPIResponse struct{
 
 
 func SaveAssetToDB(assets []*Asset) error {
+    fmt.Println("Saving to the DB")
+    fmt.Println("--------------------------------------------- \n")
+
     db := database.GetDB()
 
     if len(assets) == 0 {
-        return &errors.ValidationError{Message:"No assets provided"}
+        return &errors.ValidationError{Message: "No assets provided"}
     }
-    // TODO : The idea of Multi-Portfolio in the near future
+
     portfolioID := assets[0].PortfolioID
     var portfolio Portfolio
 
     if err := db.Where("id = ?", portfolioID).First(&portfolio).Error; err != nil {
-        return &errors.DatabaseError{Message:"Portfolio does not exist", Err: err}
+        return &errors.DatabaseError{Message: "Portfolio does not exist", Err: err}
     }
 
     // Prepare assets
@@ -138,16 +173,6 @@ func SaveAssetToDB(assets []*Asset) error {
         symbols = append(symbols, asset.Symbol)
     }
 
-    // Check for existing symbols
-    var existingAssets []Asset
-    if err := db.Where("portfolio_id = ? AND symbol IN ?", portfolioID, symbols).Find(&existingAssets).Error; err == nil && len(existingAssets) > 0 {
-        existingSymbols := make([]string, len(existingAssets))
-        for i, a := range existingAssets {
-            existingSymbols[i] = a.Symbol
-        }
-        return fmt.Errorf("Assets with these symbols already exist: %v", existingSymbols)
-    }
-
     tx := db.Begin()
     defer func() {
         if r := recover(); r != nil {
@@ -155,9 +180,51 @@ func SaveAssetToDB(assets []*Asset) error {
         }
     }()
 
-    if err := tx.CreateInBatches(assets, 100).Error; err != nil {
+    // Check for existing assets
+    var existingAssets []Asset
+    if err := tx.Where("portfolio_id = ? AND symbol IN ?", portfolioID, symbols).Find(&existingAssets).Error; err != nil {
         tx.Rollback()
-        return &errors.DatabaseError{Message:"Error adding assets to portfolio", Err: err}
+        return &errors.DatabaseError{Message: "Error checking existing assets", Err: err}
+    }
+
+    // Create a map of existing symbols for quick lookup
+    existingMap := make(map[string]bool)
+    for _, a := range existingAssets {
+        existingMap[a.Symbol] = true
+    }
+
+    // Separate new assets from existing ones
+    var newAssets []*Asset
+    var assetsToUpdate []*Asset
+
+    for _, asset := range assets {
+        if existingMap[asset.Symbol] {
+            assetsToUpdate = append(assetsToUpdate, asset)
+        } else {
+            newAssets = append(newAssets, asset)
+        }
+    }
+
+    // Create new assets
+    if len(newAssets) > 0 {
+        if err := tx.CreateInBatches(newAssets, 100).Error; err != nil {
+            tx.Rollback()
+            return &errors.DatabaseError{Message: "Error adding new assets to portfolio", Err: err}
+        }
+    }
+
+    // Update existing assets
+    for _, asset := range assetsToUpdate {
+        if err := tx.Model(&Asset{}).
+            Where("portfolio_id = ? AND symbol = ?", portfolioID, asset.Symbol).
+            Updates(map[string]interface{}{
+                "stock_data":   asset.StockData,   // Update these fields
+                "crypto_data":  asset.CryptoData,  // as needed
+                "updated_at":    time.Now(),
+            }).Error; err != nil {
+            tx.Rollback()
+            return &errors.DatabaseError{Message: "Error updating existing assets", Err: err}
+        }
     }
 
     return tx.Commit().Error

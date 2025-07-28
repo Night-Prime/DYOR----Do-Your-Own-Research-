@@ -8,6 +8,8 @@
 
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+
 export interface T {
     success?: boolean;
     data?: any;
@@ -40,11 +42,14 @@ export const getAssetData = async (stock_symbol?: string[], crypto_symbol?: stri
     }
 };
 
-export const getAssetsInsights = async(asset: string, promptType : string):Promise<any> => {
+export const getAssetsInsights = async(asset: string, promptType : string, realtime: boolean, assetType?: string):Promise<any> => {
+    console.log("Called once: ",asset, promptType, realtime, assetType);
     try {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/asset/get-ai-summary`, {
             asset_info : asset,
-            prompt_type: promptType
+            prompt_type: promptType,
+            allow_realtime: realtime,
+            asset_type: assetType
         });
 
         return {

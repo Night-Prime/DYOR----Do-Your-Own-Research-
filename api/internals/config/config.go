@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"fmt"
+	"strconv"
 
 	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
@@ -33,6 +34,8 @@ type Config struct {
 	AIEndpoint string
 	AIKey string
 	AI_MODEL string
+
+	REALTIME bool
 }
 
 func Load() (*Config, error) {
@@ -113,9 +116,20 @@ func Load() (*Config, error) {
 	if aiKey == "" {
 		return nil, errors.New("AI_KEY not set in the environment variables")
 	}
+
 	aiModel := os.Getenv("AI_MODEL")
 	if aiModel == "" {
 		return nil, errors.New("AI_MODEL not set in the environment variables")
+	}
+	
+	realTime := os.Getenv("ALLOW_REALTIME")
+	if realTime == "" {
+		return nil, errors.New("ALLOW_REALTIME not set in the environment variables")
+	}
+	// converting the realTime string to boolean:
+	value, err := strconv.ParseBool(realTime)
+	if err != nil {
+		return nil, errors.New("Error Converting Value")
 	}
 
 	cfg =  &Config{
@@ -135,6 +149,7 @@ func Load() (*Config, error) {
 		AIEndpoint:aiEndpoint,
 		AIKey: aiKey,
 		AI_MODEL: aiModel,
+		REALTIME: value,
 	}
 
 	if err := database.InitializeWithRetry(cfg.ConnStr); err != nil {

@@ -41,6 +41,10 @@ type PortfolioRequest struct {
     } `json:"assets"`
 }
 
+type PortfolioReq struct {
+    PortfolioID uuid.UUID `json:"portfolio_id"`
+}
+
 type PortfolioUpdateResponse struct {
     Portfolio        *Portfolio
     AssetsToAdd    []*Asset
@@ -213,4 +217,20 @@ func UpdatePortfolio(
     }
 
     return tx.Commit().Error
+}
+
+func GetPortfolioAssets(portfolioID uuid.UUID) (*Portfolio, error) {
+    db := database.GetDB()
+    go AutoMigrate()
+
+    if portfolioID == uuid.Nil {
+        return nil,  &errors.ValidationError{Message:"Portfolio ID is required for showing Portfolio"}
+    }
+
+    var portfolio Portfolio
+    if err := db.Preload("Portfolios").Preload("Portfolios.Assets").First(&portfolio, "id = ?", portfolioID).Error; err != nil {
+        return nil, &errors.DatabaseError{Message: "Error getting Portfolio", Err: err}
+    }
+
+    return &portfolio, nil
 }

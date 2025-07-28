@@ -15,7 +15,7 @@ import(
 )
 
 func SendRequest(url string, method string, queryParams map[string]string, queryParamsType string, body interface{}) (*http.Response, error) {
-    fmt.Printf("Sending Request here: %s with method: %s\n", url, method)
+    fmt.Printf("Sending Request here: %s with method: %s\n %v, %v, %v", url, method, queryParamsType, body, queryParams)
     fmt.Println("--------------------------------------------- \n")
 
     cfg := config.Get()
@@ -23,6 +23,7 @@ func SendRequest(url string, method string, queryParams map[string]string, query
     client := &http.Client{}
 
     req, err := http.NewRequest(method, url, nil)
+    fmt.Sprintf("%v", err)
     if err != nil {
         return nil,  &errors.DatabaseError{
             Message: "Request Error",

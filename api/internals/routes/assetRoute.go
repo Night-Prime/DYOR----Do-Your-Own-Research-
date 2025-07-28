@@ -15,7 +15,7 @@ func AssetRouteHandler() http.Handler {
 	aiClient := service.NewAIClient()
 
 	assetService := service.NewAssetService(stockClient, cryptoClient)
-	aiService := service.NewAIService(aiClient)
+	aiService := service.NewAIService(aiClient,stockClient, cryptoClient)
 	assetHandler := handlers.NewAssetHandler(assetService, aiService)
 	
 

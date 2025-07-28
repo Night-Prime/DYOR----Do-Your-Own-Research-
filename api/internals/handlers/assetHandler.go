@@ -99,6 +99,8 @@ func NewAssetHandler(assetService *service.AssetService, aiService *service.AISe
 }
 
 func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
+    portfolioID := &models.PortfolioReq{}
+
     query := r.URL.Query()
     response := models.AssetUpdateResponse{
         Stocks: nil,
@@ -106,9 +108,14 @@ func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
         Errors: nil,
     }
 
+    if err := json.NewDecoder(r.Body).Decode(portfolioID); err != nil{
+        http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+    }
+
     if stockSymbols := query.Get("stock_symbols"); stockSymbols != "" {
         symbols := strings.Split(stockSymbols, ",")
-        stocks, err := h.assetService.GetAssets(models.AssetTypeStock, symbols...)
+        stocks, err := h.assetService.GetAssets(models.AssetTypeStock, portfolioID, symbols...)
         if err != nil {
             switch err.(type) {
             case *errors.ValidationError:
@@ -125,7 +132,7 @@ func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
     
     if cryptoSymbols := query.Get("crypto_symbols"); cryptoSymbols != "" {
         symbols := strings.Split(cryptoSymbols, ",")
-        cryptos, err := h.assetService.GetAssets(models.AssetTypeCrypto, symbols...)
+        cryptos, err := h.assetService.GetAssets(models.AssetTypeCrypto, portfolioID, symbols...)
         if err != nil {
             switch err.(type) {
             case *errors.ValidationError:
@@ -141,11 +148,6 @@ func (h *AssetHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     
-    if len(response.Stocks) == 0 && len(response.Crypto) == 0 && len(response.Errors) == 0 {
-        http.Error(w, "No valid asset types or symbols provided", http.StatusBadRequest)
-        return
-    }
-    
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(response)
 }
@@ -157,10 +159,17 @@ func (h *AssetHandler) GetAIInsightsHandler(w http.ResponseWriter, r *http.Reque
 		return
     }
     
-    summary, err := h.aiService.GetAIInsightsSummary(req.AssetInfo, req.PromptType)
+    summary, err := h.aiService.GetAIInsightsSummary(req.AssetInfo, req.PromptType, req.AllowRealTime, req.AssetType)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+        switch err.(type) {
+        case *errors.ValidationError:
+            http.Error(w, err.Error(), http.StatusBadRequest) 
+        case *errors.DatabaseError:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        default:
+            http.Error(w, err.Error(), http.StatusInternalServerError) 
+        }
+        return
     }
     
     w.Header().Set("Content-Type", "application/json")

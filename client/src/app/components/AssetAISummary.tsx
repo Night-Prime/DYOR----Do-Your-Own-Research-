@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ClearRounded } from '@mui/icons-material';
 import { Asset } from '../data/models';
 import { getAssetsInsights } from '../utils/service-calls';
@@ -12,11 +12,12 @@ const AssetAISummary: React.FC<AssetAIProps> = ({ close, asset }) => {
     const [summary, setSummary] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const hasFetched = useRef(false);
 
-    const getAssetInsight = async () => {
+    const getAssetInsight = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await getAssetsInsights(asset.symbol, "asset_insight");
+            const response = await getAssetsInsights(asset.symbol, "asset_insight", true, asset.type);
             if (response.success) {
                 setSummary(response.data.sentiment);
             } else {
@@ -28,13 +29,17 @@ const AssetAISummary: React.FC<AssetAIProps> = ({ close, asset }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [asset.symbol, asset.type]);
 
     useEffect(() => {
-        getAssetInsight();
-    }, [asset.symbol]);
+        if (asset && !hasFetched.current) {
+            hasFetched.current = true;
+            getAssetInsight();
+        }
+    }, [asset, getAssetInsight]);
 
     const handleClose = () => {
+        hasFetched.current = false;
         setSummary('');
         setError(null);
         setIsLoading(false);

@@ -12,16 +12,17 @@ import Preloader from '@/app/shared/Preloader';
 import React, { useState } from 'react'
 
 const Portfolio = () => {
-  const [showAIModal, setShowAIModal] = useState<boolean>(false);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [modalState, setModalState] = useState<{
+    show: boolean;
+    asset: Asset | null;
+  }>({ show: false, asset: null });
 
   const toggleModal = () => {
-    setShowAIModal(!showAIModal);
+    setModalState(prev => ({ ...prev, show: !prev.show }));
   };
 
   const handleAssetClick = (asset: Asset) => {
-    setSelectedAsset(asset);
-    setShowAIModal(true);
+    setModalState({ show: true, asset });
   };
 
   // TODO need to abstract the entire api call to a store
@@ -76,8 +77,11 @@ const Portfolio = () => {
           </div>
         </div>
       </div>
-      {showAIModal && selectedAsset && (
-        <AssetAISummary close={toggleModal} asset={selectedAsset} />
+      {modalState.show && modalState.asset && (
+        <AssetAISummary 
+          close={toggleModal} 
+          asset={modalState.asset} 
+        />
       )}
     </>
   )

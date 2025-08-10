@@ -5,6 +5,13 @@
   --foreground: #154600;
 }
 
+@theme {
+  --color-highlight-10: #c5baa8;
+  --color-gold: #fce483;
+  --color-highlight-20: #e8e6da;
+  --color-highlight-50:#8a7557;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
